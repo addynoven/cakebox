@@ -11,7 +11,7 @@ service cloud.firestore {
     // Cakes catalog collection
     match /cakes/{cakeId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if true;
     }
 
     // Users and their subcollections

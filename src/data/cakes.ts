@@ -10,7 +10,7 @@ export const INITIAL_CAKES: CakeItem[] = [
     basePrice: 45.0,
     rating: 4.9,
     reviewsCount: 142,
-    image: 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800&q=80',
     description: 'Our vibrant, multi-layered vanilla sponge cake filled with creamy buttercream. Perfect for any celebration, this cake is sure to bring a smile to everyone\'s face!',
     flavor: 'Vanilla & Buttercream',
     dietary: ['Vegetarian', 'Nut-Free'],
@@ -145,7 +145,7 @@ export const INITIAL_CAKES: CakeItem[] = [
     basePrice: 28.0,
     rating: 4.9,
     reviewsCount: 168,
-    image: 'https://images.unsplash.com/photo-1568827999250-3f044aa10fe6?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80',
     description: 'Two thick layers of light-as-air sponge stuffed with fresh organic strawberries and light sweet vanilla whipped cream.',
     flavor: 'Fresh Strawberry Cream',
     dietary: ['Vegetarian', 'Nut-Free'],
@@ -168,7 +168,7 @@ export const INITIAL_CAKES: CakeItem[] = [
     basePrice: 35.0,
     rating: 4.9,
     reviewsCount: 120,
-    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80',
     description: 'Rich roasted Piedmont hazelnut praline layered between fudgy chocolate cake and crunchy feuilletine flakes.',
     flavor: 'Hazelnut Praline & Nutella',
     dietary: ['Vegetarian'],
@@ -282,7 +282,7 @@ export const BASE_SPONGES = [
     name: 'Funfetti Rainbow',
     color: '#FCE7F3',
     spongeColor: '#FEF08A',
-    image: 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=400&q=80',
+    image: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=400&q=80',
     flavorDesc: 'Joyful vanilla sponge studded with colorful baked-in rainbow sprinkles.'
   }
 ];
@@ -309,7 +309,7 @@ export const FROSTING_OPTIONS = [
     name: 'Sweet Strawberry',
     color: '#FFB6C1',
     bowlColor: '#FFCDD2',
-    image: 'https://images.unsplash.com/photo-1568827999250-3f044aa10fe6?auto=format&fit=crop&w=400&q=80',
+    image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=400&q=80',
     desc: 'Fresh strawberry puree whipped into pastel pink cloud frosting.'
   },
   {

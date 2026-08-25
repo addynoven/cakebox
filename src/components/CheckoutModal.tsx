@@ -1,12 +1,29 @@
 import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  StyleSheet
+} from 'react-native';
 import { CartItem, Order, UserProfile } from '../types';
-import { X, MapPin, Calendar, Clock, CreditCard, ShieldCheck, WifiOff, CheckCircle2, Gift } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { COLORS, SHADOWS } from '../utils/theme';
+import {
+  X,
+  MapPin,
+  Clock,
+  CreditCard,
+  Sparkles,
+  CheckCircle,
+  Truck
+} from 'lucide-react-native';
 
 interface CheckoutModalProps {
   cart: CartItem[];
   discount: number;
-  promoCode: string;
+  promoCode?: string;
   user: UserProfile;
   isOffline: boolean;
   onCompleteOrder: (order: Order) => void;
@@ -22,40 +39,23 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onCompleteOrder,
   onClose
 }) => {
-  const [recipientName, setRecipientName] = useState(user.name || 'Sweet Tooth');
-  const [phone, setPhone] = useState(user.phone || '+1 (555) 234-5678');
-  const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
-  const [customAddress, setCustomAddress] = useState('');
+  const defaultAddress = user.savedAddresses?.[0];
+
+  const [recipientName, setRecipientName] = useState(user.name || '');
+  const [streetAddress, setStreetAddress] = useState(defaultAddress?.address || '');
+  const [phone, setPhone] = useState(user.phone || '');
   const [deliveryDate, setDeliveryDate] = useState('Today');
-  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('3:00 PM - 5:00 PM');
-  const [giftNote, setGiftNote] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'apple_pay' | 'cash'>('card');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deliverySlot, setDeliverySlot] = useState('3:00 PM - 5:00 PM');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'apple_pay' | 'cod'>('apple_pay');
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = 5.0;
-  const tax = Number((subtotal * 0.07).toFixed(2));
+  const deliveryFee = subtotal > 50 || subtotal === 0 ? 0 : 5.0;
+  const tax = subtotal * 0.08;
   const total = Math.max(0, subtotal + deliveryFee + tax - discount);
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Confetti celebration
-    confetti({
-      particleCount: 100,
-      spread: 80,
-      origin: { y: 0.5 },
-      colors: ['#FF5E89', '#FED8BF', '#F472B6', '#10B981', '#FBBF24']
-    });
-
-    const chosenAddress =
-      selectedAddressIndex === -1
-        ? customAddress || 'Default Delivery Address'
-        : user.savedAddresses[selectedAddressIndex]?.address || '742 Evergreen Terrace, Springfield';
-
+  const handlePlaceOrder = () => {
     const newOrder: Order = {
-      id: `ord-${Math.floor(1000 + Math.random() * 9000)}`,
+      id: `ord-${Date.now()}`,
       orderNumber: `#CB-${Math.floor(1000 + Math.random() * 9000)}`,
       createdAt: new Date().toISOString(),
       items: [...cart],
@@ -65,238 +65,369 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       discount,
       total,
       status: 'Received',
-      estimatedDelivery: `${deliveryDate}, ${deliveryTimeSlot}`,
+      estimatedDelivery: `${deliveryDate}, ${deliverySlot}`,
       deliveryAddress: {
-        street: chosenAddress,
+        street: streetAddress,
         city: 'Springfield',
         recipientName,
         phone,
         deliveryDate,
-        deliveryTimeSlot
+        deliveryTimeSlot: deliverySlot
       },
       isOfflineOrder: isOffline,
       synced: !isOffline
     };
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      onCompleteOrder(newOrder);
-    }, 600);
+    onCompleteOrder(newOrder);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in select-none">
-      <div className="w-full max-w-md bg-[#FFF8F8] rounded-t-[36px] sm:rounded-[36px] border-t-2 sm:border-2 border-pink-200 shadow-2xl max-h-[92vh] flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="px-5 py-4 bg-white/80 border-b border-pink-100 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🎂</span>
-            <h3 className="text-lg font-bold font-display text-[#3B2C30]">
-              Checkout & Delivery
-            </h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center text-pink-700 hover:bg-pink-100"
+    <Modal visible animationType="slide" transparent onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <View style={styles.modalContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Truck size={18} color={COLORS.primary} />
+              <Text style={styles.title}>Checkout & Delivery</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <X size={18} color={COLORS.darkChocolate} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollBody}
           >
-            <X size={16} />
-          </button>
-        </div>
+            {/* Delivery Address Section */}
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <MapPin size={15} color={COLORS.primary} />
+                <Text style={styles.cardTitle}>Delivery Address</Text>
+              </View>
 
-        {/* Scrollable Form */}
-        <form onSubmit={handleSubmitOrder} className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
-          {/* Offline Notice Banner if offline */}
-          {isOffline && (
-            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 flex items-start gap-2.5">
-              <WifiOff size={18} className="text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-xs">
-                <span className="font-bold text-amber-800">Offline Checkout Active</span>
-                <p className="text-amber-700 mt-0.5 leading-relaxed">
-                  You are currently offline. Your order will be securely saved on this device and synced with the bakery immediately when connection returns!
-                </p>
-              </div>
-            </div>
-          )}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Recipient Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={recipientName}
+                  onChangeText={setRecipientName}
+                  placeholder="e.g. Maya Sweet"
+                />
+              </View>
 
-          {/* Delivery Address Section */}
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#584146] uppercase tracking-wider mb-2">
-              <MapPin size={14} className="text-pink-500" />
-              <span>Delivery Address</span>
-            </div>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Street & Apt</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={streetAddress}
+                  onChangeText={setStreetAddress}
+                  placeholder="e.g. 742 Evergreen Terrace"
+                />
+              </View>
 
-            <div className="flex flex-col gap-2">
-              {user.savedAddresses.map((addr, idx) => {
-                const isSelected = selectedAddressIndex === idx;
-                return (
-                  <button
-                    key={addr.id}
-                    type="button"
-                    onClick={() => setSelectedAddressIndex(idx)}
-                    className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between ${
-                      isSelected
-                        ? 'bg-pink-50/80 border-pink-500 ring-2 ring-pink-200'
-                        : 'bg-white border-pink-100 hover:border-pink-300'
-                    }`}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Contact Phone</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={phone}
+                  onChangeText={setPhone}
+                  keyboardType="phone-pad"
+                  placeholder="+1 (555) 234-5678"
+                />
+              </View>
+            </View>
+
+            {/* Delivery Time Selector */}
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Clock size={15} color={COLORS.primary} />
+                <Text style={styles.cardTitle}>Delivery Time</Text>
+              </View>
+
+              <View style={styles.dateRow}>
+                {['Today', 'Tomorrow', 'Saturday'].map((d) => (
+                  <TouchableOpacity
+                    key={d}
+                    onPress={() => setDeliveryDate(d)}
+                    style={[
+                      styles.choiceChip,
+                      deliveryDate === d && styles.choiceChipSelected
+                    ]}
                   >
-                    <div>
-                      <span className="font-bold text-xs text-[#3B2C30] block font-display">
-                        {addr.label}
-                      </span>
-                      <span className="text-[11px] text-[#584146]">
-                        {addr.address}
-                      </span>
-                    </div>
-                    {isSelected && (
-                      <CheckCircle2 size={16} className="text-pink-600 shrink-0" />
+                    <Text
+                      style={[
+                        styles.choiceText,
+                        deliveryDate === d && styles.choiceTextSelected
+                      ]}
+                    >
+                      {d}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={styles.dateRow}>
+                {['11 AM - 1 PM', '3 PM - 5 PM', '6 PM - 8 PM'].map((slot) => (
+                  <TouchableOpacity
+                    key={slot}
+                    onPress={() => setDeliverySlot(slot)}
+                    style={[
+                      styles.choiceChip,
+                      deliverySlot === slot && styles.choiceChipSelected
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.choiceText,
+                        deliverySlot === slot && styles.choiceTextSelected
+                      ]}
+                    >
+                      {slot}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Payment Method */}
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <CreditCard size={15} color={COLORS.primary} />
+                <Text style={styles.cardTitle}>Payment Method</Text>
+              </View>
+
+              <View style={styles.paymentOptions}>
+                {[
+                  { id: 'apple_pay', label: 'Pay / Google Pay', emoji: '⚡' },
+                  { id: 'card', label: 'Credit / Debit Card', emoji: '💳' },
+                  { id: 'cod', label: 'Cash on Delivery', emoji: '💵' }
+                ].map((pay) => (
+                  <TouchableOpacity
+                    key={pay.id}
+                    onPress={() => setPaymentMethod(pay.id as any)}
+                    style={[
+                      styles.payOption,
+                      paymentMethod === pay.id && styles.payOptionSelected
+                    ]}
+                  >
+                    <Text style={{ fontSize: 16 }}>{pay.emoji}</Text>
+                    <Text
+                      style={[
+                        styles.payLabel,
+                        paymentMethod === pay.id && styles.payLabelSelected
+                      ]}
+                    >
+                      {pay.label}
+                    </Text>
+                    {paymentMethod === pay.id && (
+                      <CheckCircle size={15} color={COLORS.primary} />
                     )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
 
-          {/* Recipient & Phone */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-[11px] font-bold text-[#584146] block mb-1">
-                Recipient Name
-              </label>
-              <input
-                type="text"
-                required
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                className="w-full text-xs border border-pink-200 rounded-xl px-3 py-2 bg-white text-[#3B2C30] outline-none focus:border-pink-500 font-medium"
-              />
-            </div>
+            {/* Order Total & Confirmation */}
+            <View style={styles.totalBox}>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total to Pay</Text>
+                <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
+              </View>
+            </View>
 
-            <div>
-              <label className="text-[11px] font-bold text-[#584146] block mb-1">
-                Contact Phone
-              </label>
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full text-xs border border-pink-200 rounded-xl px-3 py-2 bg-white text-[#3B2C30] outline-none focus:border-pink-500 font-medium"
-              />
-            </div>
-          </div>
-
-          {/* Delivery Scheduling */}
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#584146] uppercase tracking-wider mb-2">
-              <Calendar size={14} className="text-pink-500" />
-              <span>Delivery Time</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              {['Today', 'Tomorrow', 'This Weekend'].map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDeliveryDate(d)}
-                  className={`py-2 px-2 rounded-xl text-xs font-bold text-center border transition-all ${
-                    deliveryDate === d
-                      ? 'bg-pink-500 text-white border-pink-500 shadow-xs'
-                      : 'bg-white text-[#3B2C30] border-pink-200'
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                '11:00 AM - 1:00 PM',
-                '3:00 PM - 5:00 PM',
-                '5:00 PM - 7:00 PM',
-                '7:00 PM - 9:00 PM'
-              ].map((slot) => (
-                <button
-                  key={slot}
-                  type="button"
-                  onClick={() => setDeliveryTimeSlot(slot)}
-                  className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold border transition-all ${
-                    deliveryTimeSlot === slot
-                      ? 'bg-pink-100 text-pink-700 border-pink-400 font-bold'
-                      : 'bg-white text-gray-600 border-pink-100'
-                  }`}
-                >
-                  {slot}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Complimentary Gift Card Note */}
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#584146] uppercase tracking-wider mb-1">
-              <Gift size={14} className="text-pink-500" />
-              <span>Complimentary Greeting Card</span>
-            </div>
-            <input
-              type="text"
-              placeholder="Write a sweet message for the recipient..."
-              value={giftNote}
-              onChange={(e) => setGiftNote(e.target.value)}
-              className="w-full text-xs border border-pink-200 rounded-xl px-3 py-2 bg-white text-[#3B2C30] outline-none focus:border-pink-500 font-medium"
-            />
-          </div>
-
-          {/* Payment Method */}
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#584146] uppercase tracking-wider mb-2">
-              <CreditCard size={14} className="text-pink-500" />
-              <span>Payment Option</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: 'card', label: 'Credit Card', icon: '💳' },
-                { id: 'apple_pay', label: 'Apple/GPay', icon: '⚡' },
-                { id: 'cash', label: 'On Delivery', icon: '💵' }
-              ].map((pm) => (
-                <button
-                  key={pm.id}
-                  type="button"
-                  onClick={() => setPaymentMethod(pm.id as any)}
-                  className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all flex flex-col items-center gap-0.5 ${
-                    paymentMethod === pm.id
-                      ? 'bg-pink-500 text-white border-pink-500'
-                      : 'bg-white text-[#3B2C30] border-pink-200'
-                  }`}
-                >
-                  <span className="text-sm">{pm.icon}</span>
-                  <span className="text-[10px]">{pm.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Total & Submit Button */}
-          <div className="mt-2 pt-3 border-t border-pink-100 flex flex-col gap-2">
-            <div className="flex justify-between items-center text-xs text-[#584146]">
-              <span>Grand Total:</span>
-              <span className="text-xl font-black text-[#FF4878] font-display">
-                ${total.toFixed(2)}
-              </span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#FF5388] to-[#FF8566] text-white font-extrabold text-sm font-display shadow-md shadow-pink-500/25 hover:opacity-95 transition-all flex items-center justify-center gap-2 btn-bounce"
+            <TouchableOpacity
+              onPress={handlePlaceOrder}
+              style={styles.placeOrderBtn}
+              activeOpacity={0.85}
             >
-              <ShieldCheck size={18} />
-              <span>{isSubmitting ? 'Baking Your Order...' : `Place Order • $${total.toFixed(2)}`}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              <Sparkles size={18} color={COLORS.white} />
+              <Text style={styles.placeOrderText}>Confirm & Place Order</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(59, 44, 48, 0.6)',
+    justifyContent: 'flex-end'
+  },
+  modalContent: {
+    backgroundColor: COLORS.bgCream,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 2,
+    borderColor: COLORS.borderDark,
+    maxHeight: '90%',
+    padding: 16,
+    gap: 12
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderPink
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: COLORS.darkChocolate
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.borderPink,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  scrollBody: {
+    gap: 12,
+    paddingBottom: 24
+  },
+  card: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderPink,
+    borderRadius: 18,
+    padding: 12,
+    gap: 10
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6
+  },
+  cardTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: COLORS.darkChocolate
+  },
+  inputGroup: {
+    gap: 4
+  },
+  inputLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase'
+  },
+  textInput: {
+    backgroundColor: COLORS.bgCream,
+    borderWidth: 1,
+    borderColor: COLORS.borderPink,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 40,
+    fontSize: 12,
+    color: COLORS.darkChocolate,
+    fontWeight: '600'
+  },
+  dateRow: {
+    flexDirection: 'row',
+    gap: 8
+  },
+  choiceChip: {
+    flex: 1,
+    backgroundColor: COLORS.bgCream,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderPink,
+    borderRadius: 12,
+    paddingVertical: 8,
+    alignItems: 'center'
+  },
+  choiceChipSelected: {
+    backgroundColor: COLORS.pinkSoft,
+    borderColor: COLORS.primary
+  },
+  choiceText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.darkChocolate
+  },
+  choiceTextSelected: {
+    color: COLORS.primary,
+    fontWeight: '900'
+  },
+  paymentOptions: {
+    gap: 6
+  },
+  payOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.bgCream,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderPink,
+    borderRadius: 14,
+    padding: 10,
+    gap: 10
+  },
+  payOptionSelected: {
+    backgroundColor: COLORS.pinkSoft,
+    borderColor: COLORS.primary
+  },
+  payLabel: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.darkChocolate
+  },
+  payLabelSelected: {
+    color: COLORS.primary,
+    fontWeight: '900'
+  },
+  totalBox: {
+    backgroundColor: COLORS.white,
+    borderWidth: 2,
+    borderColor: COLORS.borderDark,
+    borderRadius: 16,
+    padding: 12
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  totalLabel: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: COLORS.darkChocolate
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.primary
+  },
+  placeOrderBtn: {
+    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: COLORS.borderDark,
+    borderRadius: 24,
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    ...SHADOWS.pink
+  },
+  placeOrderText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: '900'
+  }
+});

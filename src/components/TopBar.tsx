@@ -1,128 +1,167 @@
 import React from 'react';
-import { ArrowLeft, Search, ShoppingBag, Heart, Sparkles, MapPin } from 'lucide-react';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { ArrowLeft, Sparkles, MapPin } from 'lucide-react-native';
+import { COLORS, SHADOWS } from '../utils/theme';
 
 interface TopBarProps {
   title?: string;
   showBack?: boolean;
   onBack?: () => void;
-  showSearch?: boolean;
-  onSearchClick?: () => void;
-  showCart?: boolean;
-  onCartClick?: () => void;
-  cartCount?: number;
-  showWishlist?: boolean;
-  onWishlistClick?: () => void;
-  wishlistCount?: number;
   onOpenAIChef?: () => void;
   onOpenBakeryMap?: () => void;
-  rightAction?: React.ReactNode;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   title = 'CakeBox',
   showBack = false,
   onBack,
-  showSearch = true,
-  onSearchClick,
-  showCart = true,
-  onCartClick,
-  cartCount = 0,
-  showWishlist = false,
-  onWishlistClick,
-  wishlistCount = 0,
   onOpenAIChef,
-  onOpenBakeryMap,
-  rightAction
+  onOpenBakeryMap
 }) => {
   return (
-    <header className="w-full bg-[#FFF8F8] border-b border-pink-100/60 px-4 py-3 flex items-center justify-between z-30 shrink-0 sticky top-0">
-      {/* Zone 1: Brand title or Back button */}
-      <div className="flex items-center gap-2 min-w-0">
-        {showBack ? (
-          <button
-            onClick={onBack}
-            className="w-9 h-9 rounded-full bg-pink-50 border border-pink-200 flex items-center justify-center text-pink-700 hover:bg-pink-100 transition-colors btn-bounce"
-            aria-label="Go back"
-          >
-            <ArrowLeft size={18} />
-          </button>
-        ) : null}
+    <View style={styles.headerContainer}>
+      <View style={styles.contentRow}>
+        {/* Left Section: Back Button + Title or Logo */}
+        <View style={styles.leftSection}>
+          {showBack ? (
+            <View style={styles.backRow}>
+              <TouchableOpacity
+                onPress={onBack}
+                style={styles.backButton}
+                activeOpacity={0.7}
+              >
+                <ArrowLeft size={18} color={COLORS.darkChocolate} />
+              </TouchableOpacity>
+              <Text style={styles.screenTitle}>{title}</Text>
+            </View>
+          ) : (
+            <View style={styles.logoRow}>
+              <Image
+                source={require('../../assets/logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.logoText}>CakeBox</Text>
+            </View>
+          )}
+        </View>
 
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-xl font-bold font-display tracking-tight text-[#3B2C30] truncate">
-            {title}
-          </span>
-        </div>
-      </div>
+        {/* Right Section: Core Shortcuts */}
+        <View style={styles.rightSection}>
+          {/* AI Chef Button */}
+          {onOpenAIChef && (
+            <TouchableOpacity
+              onPress={onOpenAIChef}
+              style={styles.aiChefButton}
+              activeOpacity={0.8}
+            >
+              <Sparkles size={13} color={COLORS.white} />
+              <Text style={styles.aiChefText}>AI Chef</Text>
+            </TouchableOpacity>
+          )}
 
-      {/* Zone 2: Navigation Actions (Single line) */}
-      <div className="flex items-center gap-1.5">
-        {rightAction}
-
-        {/* AI Pastry Chef Button */}
-        {onOpenAIChef && (
-          <button
-            onClick={onOpenAIChef}
-            title="Ask Chef Rosette (Gemini AI)"
-            className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-rose-400 border border-pink-300 flex items-center justify-center text-white hover:opacity-90 transition-all btn-bounce shadow-2xs"
-            aria-label="Ask AI Pastry Chef"
-          >
-            <Sparkles size={15} />
-          </button>
-        )}
-
-        {/* Google Maps Bakery Locator */}
-        {onOpenBakeryMap && (
-          <button
-            onClick={onOpenBakeryMap}
-            title="Bakery Locations & Maps"
-            className="w-8 h-8 rounded-full bg-pink-50 border border-pink-200 flex items-center justify-center text-pink-700 hover:bg-pink-100 transition-colors btn-bounce"
-            aria-label="Find Bakeries on Map"
-          >
-            <MapPin size={15} />
-          </button>
-        )}
-
-        {showSearch && (
-          <button
-            onClick={onSearchClick}
-            className="w-8 h-8 rounded-full bg-pink-50/80 border border-pink-200 flex items-center justify-center text-pink-700 hover:bg-pink-100 transition-colors btn-bounce"
-            aria-label="Search"
-          >
-            <Search size={15} />
-          </button>
-        )}
-
-        {showWishlist && (
-          <button
-            onClick={onWishlistClick}
-            className="w-8 h-8 rounded-full bg-pink-50/80 border border-pink-200 flex items-center justify-center text-pink-700 hover:bg-pink-100 transition-colors relative btn-bounce"
-            aria-label="Wishlist"
-          >
-            <Heart size={15} />
-            {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                {wishlistCount}
-              </span>
-            )}
-          </button>
-        )}
-
-        {showCart && (
-          <button
-            onClick={onCartClick}
-            className="w-8 h-8 rounded-full bg-pink-50/80 border border-pink-200 flex items-center justify-center text-pink-700 hover:bg-pink-100 transition-colors relative btn-bounce"
-            aria-label="Shopping Cart"
-          >
-            <ShoppingBag size={15} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#F43F5E] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white animate-pulse">
-                {cartCount}
-              </span>
-            )}
-          </button>
-        )}
-      </div>
-    </header>
+          {/* Bakery Map Button */}
+          {onOpenBakeryMap && (
+            <TouchableOpacity
+              onPress={onOpenBakeryMap}
+              style={styles.iconCircle}
+              activeOpacity={0.7}
+            >
+              <MapPin size={16} color={COLORS.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    backgroundColor: COLORS.bgCream,
+    borderBottomWidth: 1.5,
+    borderBottomColor: COLORS.borderPink,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    zIndex: 30
+  },
+  contentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+  backButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderPink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.soft
+  },
+  screenTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: COLORS.darkChocolate
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  logoImage: {
+    width: 28,
+    height: 28,
+    borderRadius: 14
+  },
+  logoText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: COLORS.darkChocolate,
+    letterSpacing: -0.5
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderPink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.soft
+  },
+  aiChefButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: COLORS.darkChocolate,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.primaryLight,
+    ...SHADOWS.soft
+  },
+  aiChefText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: '800'
+  }
+});

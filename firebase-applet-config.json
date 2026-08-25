@@ -1,12 +1,12 @@
 {
-  "projectId": "southern-hallway-06pck",
-  "appId": "1:170659281304:web:c27c9ca6df74994566d3ed",
-  "apiKey": "AIzaSyBbFMWXY4sHuV9npmogVnjphzRoqyLJci0",
-  "authDomain": "southern-hallway-06pck.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-cakeboxsweetbake-63db64d6-3b68-491a-aeb3-4beca4e1a721",
-  "storageBucket": "southern-hallway-06pck.firebasestorage.app",
-  "messagingSenderId": "170659281304",
-  "measurementId": "",
-  "oAuthClientId": "170659281304-a6im2q2hh7lplth3c1leuhua27a2rntq.apps.googleusercontent.com",
+  "projectId": "cakebox-28faf",
+  "appId": "1:157522788450:web:f26bca03764ba34c88513b",
+  "apiKey": "AIzaSyD2arDzO7-2tRg-SvU-XanPR5Q3oMPjM5k",
+  "authDomain": "cakebox-28faf.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "cakebox-28faf.firebasestorage.app",
+  "messagingSenderId": "157522788450",
+  "measurementId": "G-GRTKL1866E",
+  "oAuthClientId": "157522788450-4eogf6gner5hbv98tjnep6spt9d3m5jp.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }

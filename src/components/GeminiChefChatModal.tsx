@@ -1,296 +1,356 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Sparkles, Bot, User, RefreshCw, ChevronRight, Cake, Lightbulb, Trash2 } from 'lucide-react';
-import { CakeDoodles } from './CakeDoodles';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  ActivityIndicator,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+import { COLORS, SHADOWS } from '../utils/theme';
+import { X, Sparkles, Send, Bot, User } from 'lucide-react-native';
+import { askGeminiChef } from '../services/gemini';
 
-interface ChatMessage {
-  id: string;
+interface Message {
   role: 'user' | 'model';
-  content: string;
-  timestamp: string;
+  text: string;
 }
 
 interface GeminiChefChatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenCustomizerWithFlavor?: (flavorDesc: string) => void;
 }
 
 export const GeminiChefChatModal: React.FC<GeminiChefChatModalProps> = ({
   isOpen,
-  onClose,
-  onOpenCustomizerWithFlavor
+  onClose
 }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<Message[]>([
     {
-      id: 'welcome',
       role: 'model',
-      content: "👋 Bonjour! I'm **Chef Rosette**, your CakeBox Pastry Master & Flavor Sommelier! 🍰✨\n\nAsk me anything: customized flavor pairings, guest portion math, sweet cake inscriptions, or dietary substitutions!",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      text: "Bonjour! I am Chef Rosette 👩‍🍳, your CakeBox Sweet Sommelier & Pastry Master! How can I help you design the perfect celebratory cake, calculate portions, or discover delicious flavor pairings today?"
     }
   ]);
-  const [inputText, setInputText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.7-flash' | 'gemini-3.1-flash-lite' | 'gemini-3.1-pro-preview'>('gemini-3.7-flash');
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
-    }
-  }, [messages, isOpen]);
-
-  if (!isOpen) return null;
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const quickPrompts = [
-    { label: '🎂 Servings for 25 guests', prompt: 'How big of a cake do I need to feed 25 guests, and how many tiers would you recommend?' },
-    { label: '🍓 Red Velvet pairing', prompt: 'What gourmet frosting, drip, and topping combo goes best with a Red Velvet sponge?' },
-    { label: '✍️ Witty Birthday Toppers', prompt: 'Give me 4 cute and witty short cake topper inscriptions for a 30th birthday.' },
-    { label: '🌱 Gluten-free ideas', prompt: 'What are delicious gluten-free and eggless cake options and flavor combinations you suggest?' }
+    'Feeds 15 guests?',
+    'Fun 30th Birthday cake text',
+    'Best chocolate pairings?',
+    'Gluten-free options'
   ];
 
-  const handleSendMessage = async (customPrompt?: string) => {
-    const textToSend = customPrompt || inputText;
-    if (!textToSend.trim() || isLoading) return;
+  const handleSend = async (textToSend?: string) => {
+    const userPrompt = textToSend || input.trim();
+    if (!userPrompt || loading) return;
 
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: textToSend.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    const newHistory = [...messages, userMsg];
-    setMessages(newHistory);
-    setInputText('');
-    setIsLoading(true);
+    const newMessages: Message[] = [...messages, { role: 'user', text: userPrompt }];
+    setMessages(newMessages);
+    setInput('');
+    setLoading(true);
 
     try {
-      // Build server request
-      const formattedHistory = newHistory.map((m) => ({
-        role: m.role,
-        text: m.content
-      }));
-
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          history: formattedHistory.slice(0, -1), // previous history
-          message: textToSend.trim(),
-          model: selectedModel
-        })
-      });
-
-      if (!res.ok) {
-        throw new Error(`Server returned ${res.status}`);
-      }
-
-      const data = await res.json();
-      const modelMsg: ChatMessage = {
-        id: `model-${Date.now()}`,
-        role: 'model',
-        content: data.text || 'I would love to help! Tell me more about your dream cake.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-
-      setMessages((prev) => [...prev, modelMsg]);
+      // Call live Gemini AI API directly
+      const reply = await askGeminiChef(messages, userPrompt);
+      setMessages((prev) => [...prev, { role: 'model', text: reply }]);
     } catch (err: any) {
-      console.error('Chat error:', err);
-      const fallbackMsg: ChatMessage = {
-        id: `model-${Date.now()}`,
-        role: 'model',
-        content: `🍰 **Chef Rosette's Sweet Recommendation:**\n\nFor a truly unforgettable cake, try pairing our **Red Velvet** or **Dutch Chocolate Sponge** with **Whipped Strawberry Buttercream** and a **Dark Ganache Drip**! For 20–25 guests, an 8" two-tier cake or a 10" cake is the golden standard!`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages((prev) => [...prev, fallbackMsg]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleClearChat = () => {
-    setMessages([
-      {
-        id: 'welcome',
-        role: 'model',
-        content: "✨ Chat cleared! I'm ready to help you craft your next cake masterpiece.",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      console.warn('Gemini API call failed, falling back to local guidelines:', err);
+      // Intelligent offline Pastry Chef fallback
+      let fallback = "A wonderful idea! For celebrations, I recommend an 8\" Cake which serves 8-10 people generously, or a 10\" Cake for 12-15 guests. Pair a light Swiss Vanilla Meringue with fresh strawberry compote or rich Belgian Dark Chocolate Ganache!";
+      if (userPrompt.toLowerCase().includes('text') || userPrompt.toLowerCase().includes('inscription')) {
+        fallback = "Here are cute topper & inscription ideas:\n✨ \"Level 30 Unlocked!\"\n✨ \"Sweetest 30 & Fabulous!\"\n✨ \"Aging Like Fine Ganache 🍫\"\n✨ \"Another Year Sweeter!\"";
+      } else if (userPrompt.toLowerCase().includes('guest') || userPrompt.toLowerCase().includes('feed')) {
+        fallback = "Here are our chef portion guidelines:\n🍰 6\" Cake: 4-6 servings\n🍰 8\" Cake: 8-10 servings\n🍰 10\" Cake: 12-15 servings\n🍰 Two-Tier Custom: 20-25 servings!";
       }
-    ]);
+
+      setMessages((prev) => [...prev, { role: 'model', text: fallback }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in select-none">
-      <div className="w-full max-w-md h-[92vh] max-h-[720px] bg-[#FFF8F8] rounded-t-[36px] sm:rounded-[36px] border-t-2 sm:border-2 border-pink-200 shadow-2xl flex flex-col overflow-hidden relative">
-        <CakeDoodles density="low" />
+    <Modal visible={isOpen} animationType="slide" transparent onRequestClose={onClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.overlay}
+      >
+        <View style={styles.modalContent}>
+          {/* Modal Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <View style={styles.chefAvatar}>
+                <Text style={{ fontSize: 18 }}>👩‍🍳</Text>
+              </View>
+              <View>
+                <Text style={styles.title}>Chef Rosette</Text>
+                <Text style={styles.subtitle}>Gemini AI Pastry Master</Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <X size={18} color={COLORS.darkChocolate} />
+            </TouchableOpacity>
+          </View>
 
-        {/* Top Header */}
-        <div className="px-4 py-3 bg-[#FFF0F5] border-b border-pink-200 flex items-center justify-between z-10 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-400 to-rose-400 border-2 border-white flex items-center justify-center text-xl shadow-xs text-white">
-              👩‍🍳
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-bold font-display text-sm text-[#3B2C30]">
-                  Chef Rosette (Gemini AI)
-                </h3>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              </div>
-              <span className="text-[10px] text-pink-600 font-semibold block">
-                Master Pastry Sommelier & Flavor Architect
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleClearChat}
-              title="Clear chat"
-              className="w-7 h-7 rounded-full bg-white/90 text-gray-500 hover:text-rose-600 flex items-center justify-center transition-colors"
-            >
-              <Trash2 size={13} />
-            </button>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white text-pink-700 hover:bg-pink-100 flex items-center justify-center border border-pink-200 transition-colors"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Model Selection Bar */}
-        <div className="bg-[#FFE5EC] px-4 py-1.5 border-b border-pink-200/80 flex items-center justify-between text-[11px] z-10 shrink-0">
-          <span className="font-bold text-[#584146] flex items-center gap-1">
-            <Sparkles size={11} className="text-pink-600" />
-            <span>AI Brain:</span>
-          </span>
-          <div className="flex items-center gap-1">
-            {(
-              [
-                { id: 'gemini-3.7-flash', label: '3.7 Flash (Balanced)' },
-                { id: 'gemini-3.1-flash-lite', label: '3.1 Lite (Fast)' },
-                { id: 'gemini-3.1-pro-preview', label: '3.1 Pro (Complex)' }
-              ] as const
-            ).map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setSelectedModel(m.id)}
-                className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${
-                  selectedModel === m.id
-                    ? 'bg-pink-600 text-white shadow-2xs'
-                    : 'bg-white/80 text-[#584146] hover:bg-white'
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat Thread */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 z-10">
-          {messages.map((msg) => {
-            const isUser = msg.role === 'user';
-            return (
-              <div
-                key={msg.id}
-                className={`flex gap-2.5 max-w-[88%] ${
-                  isUser ? 'self-end flex-row-reverse' : 'self-start'
-                }`}
-              >
-                {/* Avatar */}
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 mt-1 shadow-2xs ${
-                    isUser
-                      ? 'bg-[#3B2C30] text-white'
-                      : 'bg-pink-400 text-white'
-                  }`}
+          {/* Quick Suggestion Chips */}
+          <View style={styles.quickRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+              {quickPrompts.map((prompt) => (
+                <TouchableOpacity
+                  key={prompt}
+                  onPress={() => handleSend(prompt)}
+                  style={styles.quickChip}
                 >
-                  {isUser ? <User size={14} /> : <span>🍰</span>}
-                </div>
+                  <Text style={styles.quickChipText}>{prompt}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
-                {/* Message Bubble */}
-                <div
-                  className={`p-3 rounded-2xl text-xs leading-relaxed shadow-xs ${
-                    isUser
-                      ? 'bg-[#FF5E89] text-white rounded-tr-none font-medium'
-                      : 'bg-white text-[#3B2C30] border border-pink-100 rounded-tl-none font-normal'
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
-                  <span
-                    className={`block text-[9px] mt-1 ${
-                      isUser ? 'text-pink-200 text-right' : 'text-gray-400 text-left'
-                    }`}
-                  >
-                    {msg.timestamp}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-
-          {isLoading && (
-            <div className="flex gap-2.5 max-w-[80%] self-start">
-              <div className="w-7 h-7 rounded-full bg-pink-400 text-white flex items-center justify-center text-xs shrink-0">
-                🍰
-              </div>
-              <div className="p-3 bg-white rounded-2xl rounded-tl-none border border-pink-100 shadow-xs flex items-center gap-1.5 text-xs text-[#584146]">
-                <RefreshCw size={13} className="animate-spin text-pink-500" />
-                <span>Chef Rosette is whisking up recommendations...</span>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Quick Suggestion Chips */}
-        <div className="px-3 py-1.5 bg-[#FFF8F8]/90 overflow-x-auto flex gap-1.5 scrollbar-none z-10 shrink-0 border-t border-pink-100">
-          {quickPrompts.map((qp, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSendMessage(qp.prompt)}
-              className="whitespace-nowrap bg-white border border-pink-200 hover:border-pink-400 text-[#3B2C30] text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 shadow-2xs btn-bounce"
-            >
-              {qp.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Chat Input Bar */}
-        <div className="p-3 bg-white border-t border-pink-200 z-10 shrink-0">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="flex items-center gap-2"
+          {/* Chat Messages */}
+          <ScrollView
+            style={styles.messagesContainer}
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}
           >
-            <input
-              type="text"
-              placeholder="Ask Chef Rosette for sweet advice..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="flex-1 bg-[#FFF8F8] text-xs text-[#3B2C30] placeholder-gray-400 border border-pink-200 rounded-full px-3.5 py-2.5 outline-none focus:border-pink-500 font-medium"
+            {messages.map((m, idx) => {
+              const isUser = m.role === 'user';
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.msgRow,
+                    isUser ? styles.msgRowUser : styles.msgRowModel
+                  ]}
+                >
+                  {!isUser && (
+                    <View style={styles.bubbleAvatar}>
+                      <Bot size={14} color={COLORS.primary} />
+                    </View>
+                  )}
+                  <View
+                    style={[
+                      styles.bubble,
+                      isUser ? styles.bubbleUser : styles.bubbleModel
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.bubbleText,
+                        isUser ? styles.bubbleTextUser : styles.bubbleTextModel
+                      ]}
+                    >
+                      {m.text}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+
+            {loading && (
+              <View style={[styles.msgRow, styles.msgRowModel]}>
+                <View style={styles.bubbleAvatar}>
+                  <Bot size={14} color={COLORS.primary} />
+                </View>
+                <View style={[styles.bubble, styles.bubbleModel]}>
+                  <ActivityIndicator size="small" color={COLORS.primary} />
+                </View>
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Input Bar */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              value={input}
+              onChangeText={setInput}
+              placeholder="Ask Chef Rosette for cake inspiration..."
+              placeholderTextColor={COLORS.textSecondary}
+              onSubmitEditing={() => handleSend()}
             />
-            <button
-              type="submit"
-              disabled={!inputText.trim() || isLoading}
-              className="w-10 h-10 rounded-full bg-[#FF5E89] hover:bg-[#F43F5E] disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-md shadow-pink-500/25 transition-all btn-bounce"
+            <TouchableOpacity
+              onPress={() => handleSend()}
+              disabled={loading || !input.trim()}
+              style={[
+                styles.sendBtn,
+                (!input.trim() || loading) && styles.sendBtnDisabled
+              ]}
+              activeOpacity={0.8}
             >
-              <Send size={15} />
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+              <Send size={16} color={COLORS.white} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(59, 44, 48, 0.6)',
+    justifyContent: 'flex-end'
+  },
+  modalContent: {
+    backgroundColor: COLORS.bgCream,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 2,
+    borderColor: COLORS.borderDark,
+    height: '85%',
+    padding: 16,
+    gap: 10
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderPink
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+  chefAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: COLORS.pinkSoft,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderPink,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: COLORS.darkChocolate
+  },
+  subtitle: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '600'
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.borderPink,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  quickRow: {
+    paddingVertical: 2
+  },
+  quickChip: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.borderPink,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14
+  },
+  quickChipText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.primary
+  },
+  messagesContainer: {
+    flex: 1
+  },
+  messagesContent: {
+    gap: 12,
+    paddingVertical: 8
+  },
+  msgRow: {
+    flexDirection: 'row',
+    gap: 8,
+    maxWidth: '85%'
+  },
+  msgRowUser: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row-reverse'
+  },
+  msgRowModel: {
+    alignSelf: 'flex-start'
+  },
+  bubbleAvatar: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: COLORS.pinkSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2
+  },
+  bubble: {
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1.5
+  },
+  bubbleUser: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.borderDark,
+    borderBottomRightRadius: 4
+  },
+  bubbleModel: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.borderPink,
+    borderBottomLeftRadius: 4
+  },
+  bubbleText: {
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '600'
+  },
+  bubbleTextUser: {
+    color: COLORS.white
+  },
+  bubbleTextModel: {
+    color: COLORS.darkChocolate
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderPink
+  },
+  textInput: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderPink,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    height: 42,
+    fontSize: 12,
+    color: COLORS.darkChocolate,
+    fontWeight: '600'
+  },
+  sendBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.pink
+  },
+  sendBtnDisabled: {
+    opacity: 0.5
+  }
+});

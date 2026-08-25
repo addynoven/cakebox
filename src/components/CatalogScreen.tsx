@@ -1,13 +1,30 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  StyleSheet
+} from 'react-native';
 import { CakeItem } from '../types';
-import { SlidersHorizontal, Heart, X, Check, Search } from 'lucide-react';
 import { CakeDoodles } from './CakeDoodles';
+import { COLORS, SHADOWS } from '../utils/theme';
+import {
+  Search,
+  Heart,
+  Plus,
+  Star,
+  SlidersHorizontal,
+  Sparkles
+} from 'lucide-react-native';
 
 interface CatalogScreenProps {
   cakes: CakeItem[];
   initialCategory?: string;
   onSelectCake: (cake: CakeItem) => void;
-  onAddToCart: (cake: CakeItem, e?: React.MouseEvent) => void;
+  onAddToCart: (cake: CakeItem) => void;
   wishlist: string[];
   onToggleWishlist: (cakeId: string) => void;
 }
@@ -20,305 +37,375 @@ export const CatalogScreen: React.FC<CatalogScreenProps> = ({
   wishlist,
   onToggleWishlist
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
-  const [selectedDietary, setSelectedDietary] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number>(100);
+  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
 
   const categories = [
-    { id: 'all', label: 'All Delights' },
-    { id: 'birthdays', label: 'Birthday Cakes' },
-    { id: 'weddings', label: 'Wedding Cakes' },
-    { id: 'treats', label: 'Treats & Specialties' },
-    { id: 'cupcakes', label: 'Cupcakes' }
+    { id: 'all', label: 'All Joy 🍰' },
+    { id: 'birthdays', label: 'Birthdays 🎁' },
+    { id: 'weddings', label: 'Weddings 🎂' },
+    { id: 'custom', label: 'Artisan Custom ✨' },
+    { id: 'cupcakes', label: 'Cupcakes 🧁' },
+    { id: 'treats', label: 'Sweet Treats 🍪' }
   ];
 
-  const dietaryOptions = ['Nut-Free', 'Vegetarian', 'Gluten-Free', 'Eggless Option'];
+  let filtered = cakes.filter((c) => {
+    const matchesCategory = selectedCategory === 'all' || c.category === selectedCategory;
+    const matchesSearch =
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.flavor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-  const filteredCakes = useMemo(() => {
-    return cakes
-      .filter((cake) => {
-        if (selectedCategory !== 'all' && cake.category !== selectedCategory) {
-          return false;
-        }
-        if (searchQuery.trim()) {
-          const matchName = cake.name.toLowerCase().includes(searchQuery.toLowerCase());
-          const matchFlavor = cake.flavor.toLowerCase().includes(searchQuery.toLowerCase());
-          if (!matchName && !matchFlavor) return false;
-        }
-        if (cake.price > maxPrice) {
-          return false;
-        }
-        if (selectedDietary.length > 0) {
-          const hasDietary = selectedDietary.every((d) => cake.dietary.includes(d));
-          if (!hasDietary) return false;
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        if (sortBy === 'price-asc') return a.price - b.price;
-        if (sortBy === 'price-desc') return b.price - a.price;
-        if (sortBy === 'rating') return b.rating - a.rating;
-        return 0;
-      });
-  }, [cakes, selectedCategory, searchQuery, maxPrice, selectedDietary, sortBy]);
-
-  const activeCategoryTitle =
-    categories.find((c) => c.id === selectedCategory)?.label || 'Artisanal Bakery';
+  if (sortBy === 'price-low') {
+    filtered.sort((a, b) => a.price - b.price);
+  } else if (sortBy === 'price-high') {
+    filtered.sort((a, b) => b.price - a.price);
+  } else if (sortBy === 'rating') {
+    filtered.sort((a, b) => b.rating - a.rating);
+  }
 
   return (
-    <div className="w-full h-full bg-[#FFF8F8] flex flex-col relative overflow-y-auto pb-6 select-none">
+    <View style={styles.container}>
       <CakeDoodles density="low" />
 
-      {/* Screen Header matching Image 4 */}
-      <div className="px-4 pt-3 relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-2xl font-bold font-display text-[#3B2C30]">
-            {activeCategoryTitle}
-          </h2>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Search Bar */}
+        <View style={styles.searchBar}>
+          <Search size={18} color={COLORS.primary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search our delicious bakery menu..."
+            placeholderTextColor={COLORS.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery ? (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Text style={styles.clearText}>✕</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
 
-          {/* Cute Cloud Filter Button matching Image 4 */}
-          <button
-            onClick={() => setShowFilterModal(true)}
-            className="flex items-center gap-1.5 bg-white border-2 border-pink-300 hover:border-pink-500 text-pink-600 px-3.5 py-1 rounded-full shadow-xs text-xs font-bold transition-all btn-bounce"
-          >
-            <span>Filter</span>
-            <SlidersHorizontal size={13} />
-            {(selectedDietary.length > 0 || sortBy !== 'featured' || maxPrice < 100) && (
-              <span className="w-2 h-2 rounded-full bg-pink-500"></span>
-            )}
-          </button>
-        </div>
-
-        {/* Category Pills Bar */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 ${
-                selectedCategory === cat.id
-                  ? 'bg-pink-500 text-white shadow-xs'
-                  : 'bg-white text-[#584146] border border-pink-200 hover:border-pink-300'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Cakes Grid matching Image 4 */}
-      <div className="px-4 pt-2 relative z-10">
-        {filteredCakes.length === 0 ? (
-          <div className="text-center py-12 bg-white/60 rounded-3xl border border-pink-100 p-6 my-4">
-            <span className="text-4xl">🍰</span>
-            <h4 className="font-bold text-base font-display text-[#3B2C30] mt-2">
-              No matching cakes found
-            </h4>
-            <p className="text-xs text-[#584146] mt-1">
-              Try adjusting your dietary or price filters.
-            </p>
-            <button
-              onClick={() => {
-                setSelectedCategory('all');
-                setSelectedDietary([]);
-                setMaxPrice(100);
-                setSearchQuery('');
-              }}
-              className="mt-3 bg-pink-500 text-white text-xs font-bold px-4 py-1.5 rounded-full btn-bounce"
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3.5">
-            {filteredCakes.map((cake) => {
-              const isWishlisted = wishlist.includes(cake.id);
-              return (
-                <div
-                  key={cake.id}
-                  onClick={() => onSelectCake(cake)}
-                  className="bg-transparent flex flex-col cursor-pointer group"
+        {/* Category Horizontal Chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryScroll}
+        >
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => setSelectedCategory(cat.id)}
+                style={[
+                  styles.categoryChip,
+                  isSelected && styles.categoryChipSelected
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.categoryChipText,
+                    isSelected && styles.categoryChipTextSelected
+                  ]}
                 >
-                  {/* Scalloped Wavy Frame matching Image 4 */}
-                  <div className="relative p-1.5 bg-[#FFF0F5] rounded-[26px] border-2 border-pink-300/80 shadow-xs mb-2 transition-transform group-hover:scale-[1.02]">
-                    {/* Inner scalloped layer */}
-                    <div className="w-full aspect-square rounded-[20px] overflow-hidden border border-pink-200 bg-white">
-                      <img
-                        src={cake.image}
-                        alt={cake.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
-                    {cake.badge && (
-                      <span className="absolute top-2.5 left-2.5 text-[9px] font-extrabold bg-amber-300 text-amber-900 border border-[#3B2C30] px-1.5 py-0.5 rounded-full shadow-xs">
-                        {cake.badge}
-                      </span>
-                    )}
-                  </div>
+        {/* Sort & Count Row */}
+        <View style={styles.metaRow}>
+          <Text style={styles.countText}>{filtered.length} Delicious Treats</Text>
 
-                  {/* Title & Flavor */}
-                  <h4 className="font-bold text-xs font-display text-[#3B2C30] line-clamp-1 group-hover:text-pink-600 transition-colors">
-                    {cake.name}
-                  </h4>
+          <View style={styles.sortChips}>
+            <TouchableOpacity
+              onPress={() =>
+                setSortBy((prev) =>
+                  prev === 'featured'
+                    ? 'price-low'
+                    : prev === 'price-low'
+                    ? 'price-high'
+                    : prev === 'price-high'
+                    ? 'rating'
+                    : 'featured'
+                )
+              }
+              style={styles.sortBtn}
+              activeOpacity={0.7}
+            >
+              <SlidersHorizontal size={12} color={COLORS.darkChocolate} />
+              <Text style={styles.sortBtnText}>
+                {sortBy === 'featured'
+                  ? 'Featured'
+                  : sortBy === 'price-low'
+                  ? 'Price: Low'
+                  : sortBy === 'price-high'
+                  ? 'Price: High'
+                  : 'Top Rated'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-                  {/* Price & Action Row matching Image 4 */}
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="font-extrabold text-sm text-[#FF3E78] font-display">
-                      ${cake.price.toFixed(2)}
-                    </span>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAddToCart(cake, e);
-                        }}
-                        className="bg-white border border-[#3B2C30] hover:bg-pink-500 hover:text-white hover:border-pink-500 text-[#3B2C30] text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs transition-colors btn-bounce whitespace-nowrap"
-                      >
-                        Add to Cart
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleWishlist(cake.id);
-                        }}
-                        className={`text-pink-400 hover:text-rose-600 transition-colors ${
-                          isWishlisted ? 'text-rose-500 fill-rose-500' : ''
-                        }`}
-                        aria-label="Wishlist"
-                      >
-                        <Heart size={15} fill={isWishlisted ? 'currentColor' : 'none'} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Filter Modal Dialog */}
-      {showFilterModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full max-w-sm bg-[#FFF8F8] rounded-t-[32px] sm:rounded-[32px] p-5 border-t-2 sm:border-2 border-pink-200 shadow-2xl max-h-[85vh] overflow-y-auto animate-fade-in">
-            <div className="flex justify-between items-center pb-3 border-b border-pink-100">
-              <h3 className="text-lg font-bold font-display text-[#3B2C30]">
-                Filter & Sort Cakes
-              </h3>
-              <button
-                onClick={() => setShowFilterModal(false)}
-                className="w-7 h-7 rounded-full bg-pink-100 flex items-center justify-center text-pink-700"
+        {/* Cake Grid */}
+        <View style={styles.grid}>
+          {filtered.map((cake) => {
+            const isWishlisted = wishlist.includes(cake.id);
+            return (
+              <TouchableOpacity
+                key={cake.id}
+                onPress={() => onSelectCake(cake)}
+                style={styles.card}
+                activeOpacity={0.9}
               >
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Sort options */}
-            <div className="mt-3">
-              <span className="text-xs font-bold text-[#584146] uppercase tracking-wider">
-                Sort By
-              </span>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {[
-                  { id: 'featured', label: 'Featured' },
-                  { id: 'price-asc', label: 'Price: Low to High' },
-                  { id: 'price-desc', label: 'Price: High to Low' },
-                  { id: 'rating', label: 'Highest Rated' }
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setSortBy(item.id as any)}
-                    className={`py-2 px-3 rounded-xl text-xs font-medium text-left border transition-all ${
-                      sortBy === item.id
-                        ? 'bg-pink-500 text-white border-pink-500 shadow-xs'
-                        : 'bg-white text-[#3B2C30] border-pink-200'
-                    }`}
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: cake.image }} style={styles.image} />
+                  {cake.badge && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{cake.badge}</Text>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    onPress={() => onToggleWishlist(cake.id)}
+                    style={styles.wishlistBtn}
+                    activeOpacity={0.8}
                   >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    <Heart
+                      size={15}
+                      color={isWishlisted ? COLORS.primary : COLORS.darkChocolate}
+                      fill={isWishlisted ? COLORS.primary : 'none'}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-            {/* Dietary Preferences */}
-            <div className="mt-4">
-              <span className="text-xs font-bold text-[#584146] uppercase tracking-wider">
-                Dietary & Allergens
-              </span>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {dietaryOptions.map((opt) => {
-                  const isSel = selectedDietary.includes(opt);
-                  return (
-                    <button
-                      key={opt}
-                      onClick={() => {
-                        setSelectedDietary(
-                          isSel
-                            ? selectedDietary.filter((d) => d !== opt)
-                            : [...selectedDietary, opt]
-                        );
-                      }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                        isSel
-                          ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
-                          : 'bg-white text-[#3B2C30] border-pink-200'
-                      }`}
+                <View style={styles.info}>
+                  <View style={styles.ratingRow}>
+                    <Star size={11} color={COLORS.gold} fill={COLORS.gold} />
+                    <Text style={styles.rating}>{cake.rating.toFixed(1)}</Text>
+                    <Text style={styles.reviews}>({cake.reviewsCount})</Text>
+                  </View>
+
+                  <Text style={styles.name} numberOfLines={1}>
+                    {cake.name}
+                  </Text>
+                  <Text style={styles.flavor} numberOfLines={1}>
+                    {cake.flavor}
+                  </Text>
+
+                  <View style={styles.bottomRow}>
+                    <Text style={styles.price}>${cake.price.toFixed(2)}</Text>
+                    <TouchableOpacity
+                      onPress={() => onAddToCart(cake)}
+                      style={styles.addBtn}
+                      activeOpacity={0.8}
                     >
-                      {isSel && <Check size={12} />}
-                      <span>{opt}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Max Price Slider */}
-            <div className="mt-4">
-              <div className="flex justify-between text-xs font-bold text-[#584146]">
-                <span>Max Price</span>
-                <span className="text-pink-600 font-extrabold font-display">${maxPrice}</span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="200"
-                step="5"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-pink-500 mt-2"
-              />
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={() => {
-                  setSelectedDietary([]);
-                  setSortBy('featured');
-                  setMaxPrice(200);
-                }}
-                className="flex-1 py-2.5 rounded-full bg-white border border-pink-200 text-xs font-bold text-gray-600 hover:bg-gray-50"
-              >
-                Reset
-              </button>
-              <button
-                onClick={() => setShowFilterModal(false)}
-                className="flex-2 py-2.5 rounded-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold shadow-md shadow-pink-500/20"
-              >
-                Apply Filters ({filteredCakes.length})
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                      <Plus size={16} color={COLORS.white} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.bgCream
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 14
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderWidth: 2,
+    borderColor: COLORS.borderPink,
+    borderRadius: 24,
+    paddingHorizontal: 14,
+    height: 44,
+    gap: 8,
+    ...SHADOWS.soft
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: COLORS.darkChocolate,
+    fontWeight: '600'
+  },
+  clearText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.textSecondary
+  },
+  categoryScroll: {
+    gap: 8,
+    paddingVertical: 2
+  },
+  categoryChip: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderDark,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    ...SHADOWS.soft
+  },
+  categoryChipSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.borderDark
+  },
+  categoryChipText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.darkChocolate
+  },
+  categoryChipTextSelected: {
+    color: COLORS.white
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  countText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.darkChocolate
+  },
+  sortChips: {
+    flexDirection: 'row'
+  },
+  sortBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.pinkSoft,
+    borderWidth: 1,
+    borderColor: COLORS.borderPink,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 14
+  },
+  sortBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.darkChocolate
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12
+  },
+  card: {
+    width: '48%',
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: COLORS.borderDark,
+    overflow: 'hidden',
+    ...SHADOWS.soft
+  },
+  imageContainer: {
+    width: '100%',
+    height: 125,
+    position: 'relative',
+    backgroundColor: COLORS.bgCream
+  },
+  image: {
+    width: '100%',
+    height: '100%'
+  },
+  badge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8
+  },
+  badgeText: {
+    color: COLORS.white,
+    fontSize: 9,
+    fontWeight: '900'
+  },
+  wishlistBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.soft
+  },
+  info: {
+    padding: 10,
+    gap: 3
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3
+  },
+  rating: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.darkChocolate
+  },
+  reviews: {
+    fontSize: 10,
+    color: COLORS.textSecondary,
+    fontWeight: '600'
+  },
+  name: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: COLORS.darkChocolate
+  },
+  flavor: {
+    fontSize: 10,
+    color: COLORS.textSecondary,
+    fontWeight: '600'
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 6
+  },
+  price: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: COLORS.darkChocolate
+  },
+  addBtn: {
+    backgroundColor: COLORS.primary,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.pink
+  }
+});

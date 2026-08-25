@@ -1,122 +1,158 @@
-import React from 'react';
-import { DripHeader } from './DripHeader';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Image,
+  Animated
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
+
+const { width } = Dimensions.get('window');
 
 interface SplashScreenProps {
   onStart: () => void;
 }
 
+// Thick glossy cream drip header matching Stitch screen
+const SplashDrips = () => (
+  <View style={styles.dripContainer} pointerEvents="none">
+    <Svg width={width} height={210} viewBox="0 0 400 210" preserveAspectRatio="none">
+      {/* Soft Drop Shadow under drip */}
+      <Path
+        d="M 0 0 L 400 0 L 400 35 C 385 35 375 55 365 95 C 358 125 352 145 340 145 C 328 145 322 125 315 85 C 305 35 290 35 275 40 C 260 45 252 85 248 120 C 244 155 238 165 228 165 C 218 165 212 155 208 115 C 200 40 185 35 170 40 C 155 45 150 70 145 95 C 140 115 135 125 125 125 C 115 125 110 110 105 80 C 95 30 80 30 70 45 C 60 60 55 150 48 185 C 42 205 28 205 22 185 C 16 160 12 65 0 55 Z"
+        fill="rgba(110, 8, 32, 0.22)"
+        transform="translate(0, 6)"
+      />
+
+      {/* Main Glossy Cream Drip Body */}
+      <Path
+        d="M 0 0 L 400 0 L 400 35 C 385 35 375 55 365 95 C 358 125 352 145 340 145 C 328 145 322 125 315 85 C 305 35 290 35 275 40 C 260 45 252 85 248 120 C 244 155 238 165 228 165 C 218 165 212 155 208 115 C 200 40 185 35 170 40 C 155 45 150 70 145 95 C 140 115 135 125 125 125 C 115 125 110 110 105 80 C 95 30 80 30 70 45 C 60 60 55 150 48 185 C 42 205 28 205 22 185 C 16 160 12 65 0 55 Z"
+        fill="#FFFAF2"
+      />
+
+      {/* Glossy White Specular Sheen on drips */}
+      <Path
+        d="M 26 150 C 24 175 25 195 32 195 C 34 195 35 185 35 165"
+        stroke="rgba(255, 255, 255, 0.85)"
+        strokeWidth="4"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Path
+        d="M 224 130 C 222 148 223 158 228 158 C 230 158 231 150 231 138"
+        stroke="rgba(255, 255, 255, 0.85)"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Path
+        d="M 336 115 C 334 130 335 138 340 138 C 342 138 343 130 343 122"
+        stroke="rgba(255, 255, 255, 0.85)"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </Svg>
+  </View>
+);
+
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.92)).current;
+
+  useEffect(() => {
+    // Gentle entrance pop
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true
+      })
+    ]).start();
+
+    // Auto navigate after 2.4 seconds
+    const timer = setTimeout(() => {
+      onStart();
+    }, 2400);
+
+    return () => clearTimeout(timer);
+  }, [onStart]);
+
   return (
-    <div className="w-full h-full flex flex-col justify-between bg-gradient-to-b from-[#FFA7C4] via-[#FFB7B2] to-[#FFD8B4] text-[#3B2C30] relative overflow-hidden select-none">
-      {/* Top Creamy Drip Header matching Image 2 */}
-      <div className="w-full relative">
-        <DripHeader color="#FFFFFF" height={70} />
-      </div>
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={onStart}
+      style={styles.container}
+    >
+      {/* Rich Pink-to-Orange Sunset Gradient */}
+      <LinearGradient
+        colors={['#FF2A80', '#FF3C78', '#FF6347', '#FF8F00', '#FFA400']}
+        locations={[0, 0.22, 0.52, 0.82, 1]}
+        style={StyleSheet.absoluteFill}
+      />
 
-      {/* Floating Sparkles & Doodles */}
-      <div className="absolute inset-0 pointer-events-none">
-        <span className="absolute top-28 left-8 text-white text-xl animate-pulse">✨</span>
-        <span className="absolute top-44 right-10 text-white/80 text-lg animate-bounce">🍓</span>
-        <span className="absolute bottom-40 left-12 text-white/80 text-xl animate-float">🧁</span>
-        <span className="absolute bottom-60 right-8 text-white text-lg">★</span>
-      </div>
+      {/* Top Glossy Cream Drip Header */}
+      <SplashDrips />
 
-      {/* Central Mascot & Branding matching Image 2 */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center z-10 -mt-8">
-        {/* Smiling Kawaii Cake Mascot Vector */}
-        <div className="w-36 h-36 relative mb-4 animate-float">
-          <svg viewBox="0 0 160 160" className="w-full h-full drop-shadow-xl">
-            {/* Cake Base */}
-            <path
-              d="M20,70 L20,125 C20,140 140,140 140,125 L140,70 Z"
-              fill="#FDE68A"
-              stroke="#3B2C30"
-              strokeWidth="4"
-              strokeLinejoin="round"
-            />
-            {/* Frosting top with wavy icing */}
-            <ellipse cx="80" cy="70" rx="60" ry="18" fill="#FFFFFF" stroke="#3B2C30" strokeWidth="4" />
-            <path
-              d="M20,70 
-                 C30,85 40,85 50,75 
-                 C60,88 70,88 80,75 
-                 C90,90 100,90 110,75 
-                 C120,85 130,85 140,70"
-              fill="#FFFFFF"
-              stroke="#3B2C30"
-              strokeWidth="3.5"
-            />
-
-            {/* Kawaii Face on Cake */}
-            {/* Left Eye */}
-            <circle cx="58" cy="102" r="5" fill="#3B2C30" />
-            <circle cx="56" cy="100" r="1.5" fill="#FFFFFF" />
-            {/* Right Eye */}
-            <circle cx="102" cy="102" r="5" fill="#3B2C30" />
-            <circle cx="100" cy="100" r="1.5" fill="#FFFFFF" />
-            {/* Blushing Cheeks */}
-            <ellipse cx="48" cy="108" rx="5" ry="3" fill="#FB7185" opacity="0.8" />
-            <ellipse cx="112" cy="108" rx="5" ry="3" fill="#FB7185" opacity="0.8" />
-            {/* Open Happy Smile */}
-            <path
-              d="M74,106 Q80,116 86,106"
-              stroke="#3B2C30"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              fill="#F43F5E"
-            />
-
-            {/* Whipped Cream Swirl on Top */}
-            <path
-              d="M60,65 C60,40 75,32 80,26 C85,32 100,40 100,65 Z"
-              fill="#FFFFFF"
-              stroke="#3B2C30"
-              strokeWidth="3"
-            />
-            {/* Berries on Whipped Swirl */}
-            <circle cx="80" cy="24" r="7" fill="#EF4444" stroke="#3B2C30" strokeWidth="2.5" />
-            <circle cx="68" cy="35" r="5" fill="#3B82F6" stroke="#3B2C30" strokeWidth="2" />
-            <circle cx="94" cy="36" r="4.5" fill="#8B5CF6" stroke="#3B2C30" strokeWidth="2" />
-
-            {/* Colorful Sprinkles on top */}
-            <circle cx="45" cy="68" r="2.5" fill="#3B82F6" />
-            <circle cx="65" cy="62" r="2.5" fill="#EC4899" />
-            <circle cx="95" cy="64" r="2.5" fill="#10B981" />
-            <circle cx="115" cy="68" r="2.5" fill="#F59E0B" />
-          </svg>
-        </div>
-
-        {/* Brand Wordmark Title */}
-        <div className="flex items-center justify-center gap-2">
-          <h1 className="text-4xl font-extrabold text-white tracking-wide font-display drop-shadow-md">
-            CakeBox
-          </h1>
-        </div>
-
-        <p className="text-white/95 text-lg font-serif italic mt-2 tracking-wide font-medium">
-          Celebrate every moment
-        </p>
-
-        <p className="text-white/80 text-xs mt-3 max-w-xs leading-relaxed">
-          Artisanal custom bakery, hand-delivered sweetness & joyful celebrations.
-        </p>
-      </div>
-
-      {/* Bottom Action Area */}
-      <div className="px-6 pb-8 z-10 flex flex-col items-center gap-3">
-        <button
-          onClick={onStart}
-          className="w-full max-w-xs py-3.5 px-6 rounded-full bg-white text-pink-600 font-bold text-base shadow-lg shadow-pink-900/15 hover:bg-pink-50 transition-all flex items-center justify-center gap-2 btn-bounce"
+      {/* Center Wordmark Logo */}
+      <View style={styles.centerContainer}>
+        <Animated.View
+          style={[
+            styles.logoWrapper,
+            {
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }]
+            }
+          ]}
         >
-          <span>Get Started</span>
-          <ArrowRight size={18} />
-        </button>
-        <div className="flex items-center gap-1 text-white/70 text-xs">
-          <Sparkles size={12} />
-          <span>Freshly Baked Every Morning • 100% Offline Ready</span>
-        </div>
-      </div>
-    </div>
+          <Image
+            source={require('../../assets/logo_wordmark.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        </Animated.View>
+      </View>
+    </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative'
+  },
+  dripContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24
+  },
+  logoWrapper: {
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  logoImage: {
+    width: width * 0.84,
+    height: (width * 0.84) * 0.5,
+    maxWidth: 340,
+    maxHeight: 170
+  }
+});
