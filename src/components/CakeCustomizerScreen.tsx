@@ -5,7 +5,9 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  StyleSheet
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { CustomCakeConfig, CartItem, CakeItem } from '../types';
 import { BASE_SPONGES, FROSTING_OPTIONS, DRIP_OPTIONS, TOPPER_STYLES } from '../data/cakes';
@@ -126,10 +128,15 @@ export const CakeCustomizerScreen: React.FC<CakeCustomizerScreenProps> = ({
       </View>
 
       {/* Main Body */}
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
       >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
         {/* ================= STEP 1: SPONGE BASE ================= */}
         {step === 1 && (
           <View style={styles.stepBox}>
@@ -519,7 +526,8 @@ export const CakeCustomizerScreen: React.FC<CakeCustomizerScreenProps> = ({
             </TouchableOpacity>
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };

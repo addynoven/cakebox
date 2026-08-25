@@ -87,6 +87,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.heading}>Your Sweet Cart ({cart.length})</Text>
 

@@ -75,10 +75,17 @@ export const GeminiChefChatModal: React.FC<GeminiChefChatModalProps> = ({
   };
 
   return (
-    <Modal visible={isOpen} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={isOpen}
+      animationType="slide"
+      transparent
+      statusBarTranslucent={true}
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.overlay}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <View style={styles.modalContent}>
           {/* Modal Header */}
@@ -117,6 +124,7 @@ export const GeminiChefChatModal: React.FC<GeminiChefChatModalProps> = ({
             style={styles.messagesContainer}
             contentContainerStyle={styles.messagesContent}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             {messages.map((m, idx) => {
               const isUser = m.role === 'user';

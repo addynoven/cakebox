@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
-  StyleSheet
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { CartItem, Order, UserProfile } from '../types';
 import { COLORS, SHADOWS } from '../utils/theme';
@@ -82,8 +84,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   };
 
   return (
-    <Modal visible animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
+    <Modal
+      visible
+      animationType="slide"
+      transparent
+      statusBarTranslucent={true}
+      onRequestClose={onClose}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.overlay}
+      >
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
@@ -98,6 +109,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
           <ScrollView
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.scrollBody}
           >
             {/* Delivery Address Section */}
@@ -247,7 +259,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </TouchableOpacity>
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

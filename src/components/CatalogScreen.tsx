@@ -74,6 +74,7 @@ export const CatalogScreen: React.FC<CatalogScreenProps> = ({
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Search Bar */}
         <View style={styles.searchBar}>
