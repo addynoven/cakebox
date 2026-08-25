@@ -1,6 +1,31 @@
-# 🎂 CakeBox — Celebrate Every Moment
+<p align="center">
+  <img src="assets/logo_wordmark.png" width="340" alt="CakeBox Logo" />
+</p>
 
-> A high-performance, mobile-first artisanal bakery app built with **React Native (New Architecture)**, **TurboModules & NitroModules**, **MMKV v4 + Zustand State Persistence**, **Firebase Firestore real-time synchronization**, and an **AI Pastry Chef powered by Google Gemini 2.5 Flash**.
+<p align="center">
+  <strong>Celebrate every moment with artisanal cakes & smart custom baking.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React_Native-0.81.5-61DAFB?logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/Architecture-New_Arch_%2F_TurboModules-FF2A80" />
+  <img src="https://img.shields.io/badge/Storage-MMKV_v4_%2B_NitroModules-FF7A00" />
+  <img src="https://img.shields.io/badge/Backend-Firebase_Firestore-FFCA28?logo=firebase&logoColor=black" />
+  <img src="https://img.shields.io/badge/AI-Gemini_2.5_Flash-4285F4?logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Release_APK-24_MB_(arm64--v8a)-00C853" />
+</p>
+
+---
+
+## 📸 App Showcase
+
+| 🌟 Splash Screen | 🏠 Home & Live Menu | 🎂 Product Details |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/splash.png" width="240" /> | <img src="assets/screenshots/home.png" width="240" /> | <img src="assets/screenshots/product_detail.png" width="240" /> |
+
+| 🎨 3D Customizer Studio | 🛒 Cart & Promo Engine | 👤 Profile & Orders |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/customizer.png" width="240" /> | <img src="assets/screenshots/cart.png" width="240" /> | <img src="assets/screenshots/profile_orders.png" width="240" /> |
 
 ---
 
@@ -87,7 +112,8 @@ cakebox/
 │   └── gradle.properties      # reactNativeArchitectures=arm64-v8a
 ├── assets/                    # Optimized icons, splash artwork & wordmarks
 │   ├── logo.png               # High-res circular cupcake brand mark
-│   └── logo_wordmark.png      # CakeBox die-cut sticker wordmark
+│   ├── logo_wordmark.png      # CakeBox die-cut sticker wordmark
+│   └── screenshots/           # High-res UI showcase previews
 ├── src/
 │   ├── components/            # Feature-oriented UI screens & components
 │   │   ├── BakeryMapModal.tsx
