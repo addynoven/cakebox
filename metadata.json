@@ -1,0 +1,6 @@
+{
+  "name": "CakeBox - Sweet Bakery & Custom Cakes",
+  "description": "Artisanal cake ordering and interactive cute cake customization app with offline support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

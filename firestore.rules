@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Cakes catalog collection
+    match /cakes/{cakeId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Users and their subcollections
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || !isAuthenticated();
+      
+      match /wishlist/{item} {
+        allow read, write: if isOwner(userId) || !isAuthenticated();
+      }
+      match /addresses/{addressId} {
+        allow read, write: if isOwner(userId) || !isAuthenticated();
+      }
+    }
+
+    // Orders collection
+    match /orders/{orderId} {
+      allow read, create: if true;
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Custom cake designs
+    match /customCreations/{creationId} {
+      allow read, create, update: if true;
+    }
+
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read, create: if true;
+      allow update, delete: if isAuthenticated();
+    }
+  }
+}
