@@ -30,11 +30,31 @@ import {
   orderBy,
   limit
 } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { signInWithCredential } from "firebase/auth";
 import { CakeItem, Order, UserProfile, CartItem, CustomCakeConfig } from '../types';
 import { INITIAL_CAKES } from '../data/cakes';
+
+// Safe environment configuration loader
+let localConfig: Record<string, any> = {};
+try {
+  // @ts-ignore
+  localConfig = require('../../firebase-applet-config.json');
+} catch {
+  // Fallback to environment variables when config file is not present
+}
+
+const firebaseConfig = {
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || localConfig.apiKey || "",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || localConfig.authDomain || "cakebox-28faf.firebaseapp.com",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || localConfig.projectId || "cakebox-28faf",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || localConfig.storageBucket || "cakebox-28faf.firebasestorage.app",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || localConfig.messagingSenderId || "",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || localConfig.appId || "",
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || localConfig.measurementId || "",
+  oAuthClientId: process.env.EXPO_PUBLIC_FIREBASE_OAUTH_CLIENT_ID || localConfig.oAuthClientId || "",
+  firestoreDatabaseId: process.env.EXPO_PUBLIC_FIRESTORE_DATABASE_ID || localConfig.firestoreDatabaseId || "(default)",
+};
 
 // Initialize Firebase App
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -52,10 +72,12 @@ export const auth = (() => {
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-GoogleSignin.configure({
-  webClientId: '157522788450-4eogf6gner5hbv98tjnep6spt9d3m5jp.apps.googleusercontent.com',
-});
-
+const googleWebClientId = firebaseConfig.oAuthClientId;
+if (googleWebClientId) {
+  GoogleSignin.configure({
+    webClientId: googleWebClientId,
+  });
+}
 
 // Initialize Firestore with specific database ID from config
 export const db = getFirestore(

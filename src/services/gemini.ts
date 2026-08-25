@@ -3,8 +3,8 @@ export interface ChatMessage {
   text: string;
 }
 
-const GEMINI_API_KEY = "AQ.Ab8RN6K_O4b8cufFGt3iH76N9sGosy6sz4i1MsR2zPhbpW8y8w";
-const GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-3.6-flash"];
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
 const SYSTEM_INSTRUCTION = `You are Chef Rosette 👩‍🍳, the AI Master Pastry Chef & Sweet Sommelier of CakeBox Bakery.
 Your mission is to provide delightful, fast, and highly practical cake design, portion calculations, and flavor pairing advice directly inside the CakeBox mobile app.
