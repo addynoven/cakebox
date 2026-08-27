@@ -7,12 +7,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/addynoven/cakebox/releases"><img src="https://img.shields.io/github/v/release/addynoven/cakebox?label=Download%20APK&logo=android&color=00C853" /></a>
   <img src="https://img.shields.io/badge/React_Native-0.81.5-61DAFB?logo=react&logoColor=black" />
   <img src="https://img.shields.io/badge/Architecture-New_Arch_%2F_TurboModules-FF2A80" />
   <img src="https://img.shields.io/badge/Storage-MMKV_v4_%2B_NitroModules-FF7A00" />
   <img src="https://img.shields.io/badge/Backend-Firebase_Firestore-FFCA28?logo=firebase&logoColor=black" />
   <img src="https://img.shields.io/badge/AI-Gemini_2.5_Flash-4285F4?logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/Release_APK-24_MB_(arm64--v8a)-00C853" />
+  <img src="https://img.shields.io/badge/Size-24_MB_(arm64--v8a)-00C853" />
 </p>
 
 ---
