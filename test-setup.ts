@@ -47,3 +47,28 @@ mock.module('react-native-mmkv', () => ({
     getAllKeys: () => [],
   }),
 }));
+
+const mockSecureStore: Record<string, string> = {};
+
+mock.module('expo-secure-store', () => ({
+  getItemAsync: async (key: string) => mockSecureStore[key] ?? null,
+  setItemAsync: async (key: string, value: string) => {
+    mockSecureStore[key] = value;
+  },
+  deleteItemAsync: async (key: string) => {
+    delete mockSecureStore[key];
+  },
+  isAvailableAsync: async () => true,
+}));
+
+mock.module('expo-local-authentication', () => ({
+  hasHardwareAsync: async () => true,
+  isEnrolledAsync: async () => true,
+  supportedAuthenticationTypesAsync: async () => [1, 2],
+  authenticateAsync: async () => ({ success: true }),
+  AuthenticationType: {
+    FINGERPRINT: 1,
+    FACIAL_RECOGNITION: 2,
+    IRIS: 3,
+  },
+}));

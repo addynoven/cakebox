@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { mapUserProfileDoc } from '../../../core/api/firestoreMappers';
+import { SecureStorage, BiometricAuth } from '../../../core/storage';
 import { UserProfileSchema } from '../models/user.model';
 
 describe('Auth Module Integration', () => {
@@ -21,5 +22,28 @@ describe('Auth Module Integration', () => {
 
     const parsed = UserProfileSchema.safeParse(user);
     expect(parsed.success).toBe(true);
+  });
+
+  it('should securely store, retrieve and clear sensitive auth tokens', async () => {
+    const testToken = 'secure_jwt_token_cakebox_xyz';
+    const saved = await SecureStorage.setAuthToken(testToken);
+    expect(saved).toBe(true);
+
+    const retrieved = await SecureStorage.getAuthToken();
+    expect(retrieved).toBe(testToken);
+
+    await SecureStorage.clearAuthToken();
+    const afterClear = await SecureStorage.getAuthToken();
+    expect(afterClear).toBeNull();
+  });
+
+  it('should verify biometric support and authentication readiness', async () => {
+    const support = await BiometricAuth.checkSupport();
+    expect(support.hasHardware).toBe(true);
+    expect(support.isEnrolled).toBe(true);
+    expect(support.biometricTypes.length).toBeGreaterThan(0);
+
+    const authSuccess = await BiometricAuth.authenticate('Unlock CakeBox');
+    expect(authSuccess).toBe(true);
   });
 });

@@ -14,6 +14,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { auth, db } from '../../../core/api/firebase';
 import { mapUserProfileDoc } from '../../../core/api/firestoreMappers';
 import { AppError, captureError } from '../../../core/errors';
+import { SecureStorage } from '../../../core/storage';
 import { UserProfile } from '../models/user.model';
 
 export class AuthRepository {
@@ -29,6 +30,10 @@ export class AuthRepository {
       const credential = GoogleAuthProvider.credential(idToken);
       const result = await signInWithCredential(auth, credential);
       const fbUser = result.user;
+
+      // Securely store hardware-encrypted token
+      const token = await fbUser.getIdToken();
+      await SecureStorage.setAuthToken(token);
 
       const userDocRef = doc(db, 'users', fbUser.uid);
       const existingSnap = await getDoc(userDocRef);
@@ -61,6 +66,10 @@ export class AuthRepository {
       const result = await signInWithEmailAndPassword(auth, email, pass);
       const fbUser = result.user;
 
+      // Securely store hardware-encrypted token
+      const token = await fbUser.getIdToken();
+      await SecureStorage.setAuthToken(token);
+
       const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
       if (userDoc.exists()) {
         return mapUserProfileDoc(fbUser.uid, userDoc.data());
@@ -87,6 +96,10 @@ export class AuthRepository {
 
       await updateProfile(fbUser, { displayName: name });
 
+      // Securely store hardware-encrypted token
+      const token = await fbUser.getIdToken();
+      await SecureStorage.setAuthToken(token);
+
       const newProfile: UserProfile = {
         id: fbUser.uid,
         name: name,
@@ -108,6 +121,15 @@ export class AuthRepository {
     }
   }
 
+  static async signOut(): Promise<void> {
+    try {
+      await fbSignOut(auth);
+      await SecureStorage.clearAllCredentials();
+    } catch (err: unknown) {
+      throw captureError(err, { source: 'AuthRepository', action: 'signOut' });
+    }
+  }
+
   static async resetPassword(email: string): Promise<void> {
     try {
       await sendPasswordResetEmail(auth, email);
@@ -116,28 +138,12 @@ export class AuthRepository {
     }
   }
 
-  static async signOut(): Promise<void> {
-    try {
-      try {
-        await GoogleSignin.signOut();
-      } catch {
-        // Ignored
-      }
-      await fbSignOut(auth);
-    } catch (err: unknown) {
-      throw captureError(err, { source: 'AuthRepository', action: 'signOut' });
-    }
-  }
-
   static async syncWishlist(userId: string, wishlist: string[]): Promise<void> {
     try {
-      if (!userId) return;
-      await updateDoc(doc(db, 'users', userId), {
-        wishlist,
-        updatedAt: new Date().toISOString(),
-      });
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, { wishlist });
     } catch (err: unknown) {
-      captureError(err, { source: 'AuthRepository', action: 'syncWishlist' });
+      throw captureError(err, { source: 'AuthRepository', action: 'syncWishlist' });
     }
   }
 
