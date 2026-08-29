@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { Mail, Lock, User as UserIcon, Eye, EyeOff } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -40,9 +41,9 @@ const GoogleLogo = ({ size = 20 }: { size?: number }) => (
   </Svg>
 );
 
-const BackgroundDoodles = () => (
+const BackgroundDoodles = ({ topOffset = 0 }: { topOffset?: number }) => (
   <View style={StyleSheet.absoluteFill} pointerEvents="none">
-    <View style={[styles.doodleItem, { top: 95, left: 16 }]}>
+    <View style={[styles.doodleItem, { top: topOffset + 95, left: 16 }]}>
       <Svg width={32} height={32} viewBox="0 0 36 36">
         <Circle cx="18" cy="8" r="4" fill="#FF5E89" opacity={0.6} />
         <Path d="M10 16 Q18 10 26 16 Q28 20 25 24 Q18 25 11 24 Q8 20 10 16 Z" fill="#FBCFE8" opacity={0.7} />
@@ -50,7 +51,7 @@ const BackgroundDoodles = () => (
       </Svg>
     </View>
 
-    <View style={[styles.doodleItem, { top: 130, right: 20 }]}>
+    <View style={[styles.doodleItem, { top: topOffset + 130, right: 20 }]}>
       <Svg width={36} height={30} viewBox="0 0 40 32">
         <Circle cx="30" cy="5" r="3" fill="#EF4444" opacity={0.6} />
         <Path d="M8 26 L32 12 L34 26 Z" fill="#FED7AA" stroke="#78350F" strokeWidth={1.2} opacity={0.6} />
@@ -58,7 +59,7 @@ const BackgroundDoodles = () => (
       </Svg>
     </View>
 
-    <View style={[styles.doodleItem, { top: 210, left: 14, transform: [{ rotate: '-35deg' }] }]}>
+    <View style={[styles.doodleItem, { top: topOffset + 210, left: 14, transform: [{ rotate: '-35deg' }] }]}>
       <Svg width={30} height={14} viewBox="0 0 34 16">
         <Rect x="6" y="2" width="22" height="12" rx="3" fill="#FDBA74" stroke="#78350F" strokeWidth={1} opacity={0.55} />
         <Rect x="0" y="6" width="6" height="4" rx="1.5" fill="#FED7AA" stroke="#78350F" strokeWidth={0.8} opacity={0.55} />
@@ -66,7 +67,7 @@ const BackgroundDoodles = () => (
       </Svg>
     </View>
 
-    <View style={[styles.doodleItem, { top: 270, right: 20 }]}>
+    <View style={[styles.doodleItem, { top: topOffset + 270, right: 20 }]}>
       <Text style={{ fontSize: 13, color: '#F59E0B', opacity: 0.45 }}>★</Text>
     </View>
 
@@ -91,9 +92,10 @@ const BackgroundDoodles = () => (
   </View>
 );
 
-const DripIcing = () => (
-  <View style={styles.dripContainer} pointerEvents="none">
-    <Svg viewBox="0 0 1200 160" preserveAspectRatio="none" width="100%" height={90}>
+const DripIcing = ({ topOffset = 0 }: { topOffset?: number }) => (
+  <View style={[styles.dripContainer, { top: 0, height: topOffset + 70 }]} pointerEvents="none">
+    <View style={{ height: topOffset, backgroundColor: 'rgba(255, 255, 255, 0.95)' }} />
+    <Svg viewBox="0 0 1200 160" preserveAspectRatio="none" width="100%" height={70}>
       <Path
         d="M0,0 L1200,0 L1200,50 C1140,50 1120,120 1060,120 C1000,120 980,40 920,40 C860,40 840,140 780,140 C720,140 700,55 640,55 C580,55 560,145 500,145 C440,145 420,45 360,45 C300,45 280,130 220,130 C160,130 140,35 80,35 C40,35 20,75 0,75 Z"
         fill="rgba(255, 255, 255, 0.95)"
@@ -108,6 +110,7 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { setUser, showToast } = useAuthStore();
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
@@ -204,15 +207,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSuccess }) => {
         style={StyleSheet.absoluteFill}
       />
 
-      <DripIcing />
-      <BackgroundDoodles />
+      <DripIcing topOffset={insets.top} />
+      <BackgroundDoodles topOffset={insets.top} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingTop: insets.top + 24,
+              paddingBottom: Math.max(insets.bottom, 20) + 24,
+            },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >

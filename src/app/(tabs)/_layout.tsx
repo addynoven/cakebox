@@ -1,16 +1,20 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Platform, View, Text, StyleSheet } from 'react-native';
-import { Home, BookOpen, Sparkles, ShoppingBag, User } from 'lucide-react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Home, BookOpen, ShoppingBag, User } from 'lucide-react-native';
 import { colors } from '../../core/theme/colors';
 import { shadows } from '../../core/theme/shadows';
 import { useFeatureFlag } from '../../core/config';
 import { useCartStore } from '../../features/cart/store/useCartStore';
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
   const cart = useCartStore((state) => state.cart);
   const totalCartCount = cart.reduce((sum, it) => sum + it.quantity, 0);
   const isCustomizerEnabled = useFeatureFlag('enable3DCustomizer');
+
+  const bottomInset = Math.max(insets.bottom, 8);
 
   return (
     <Tabs
@@ -22,9 +26,9 @@ export default function TabLayout() {
           backgroundColor: colors.white,
           borderTopColor: colors.borderPink,
           borderTopWidth: 1.5,
-          height: Platform.OS === 'ios' ? 84 : 66,
+          height: 56 + bottomInset,
           paddingTop: 6,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          paddingBottom: bottomInset,
           ...shadows.medium,
         },
         tabBarLabelStyle: {
