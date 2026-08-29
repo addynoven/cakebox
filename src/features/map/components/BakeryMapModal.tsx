@@ -10,14 +10,8 @@ import {
 import { COLORS, SHADOWS } from '../../../core/theme';
 import { X, MapPin, Clock, Navigation, CheckCircle } from 'lucide-react-native';
 
-interface BakeryLocation {
-  id: string;
-  name: string;
-  address: string;
-  hours: string;
-  specialty: string;
-  distance: string;
-}
+import { BakeryLocation } from '../models/bakeryLocation.model';
+import { BakeryMapRepository } from '../repositories/bakeryMap.repository';
 
 interface BakeryMapModalProps {
   isOpen: boolean;
@@ -32,32 +26,7 @@ export const BakeryMapModal: React.FC<BakeryMapModalProps> = ({
 }) => {
   const [selectedId, setSelectedId] = useState('loc-1');
 
-  const locations: BakeryLocation[] = [
-    {
-      id: 'loc-1',
-      name: 'CakeBox Downtown Atelier',
-      address: '104 Sweetwater Avenue, Downtown Springfield',
-      hours: 'Mon–Sun: 8:00 AM – 9:00 PM',
-      specialty: 'Same-Day Signature Drip Cakes & Custom Tiers',
-      distance: '0.8 miles away'
-    },
-    {
-      id: 'loc-2',
-      name: 'The Sugar Blossom Cake Studio',
-      address: '742 Evergreen Plaza, Suite B',
-      hours: 'Tue–Sun: 9:00 AM – 7:00 PM',
-      specialty: 'Vintage Lambeth Buttercream & Organic Gluten-Free',
-      distance: '1.5 miles away'
-    },
-    {
-      id: 'loc-3',
-      name: 'Velvet & Crumbs Bakery Lounge',
-      address: '520 Blossom Hill Road',
-      hours: 'Daily: 8:30 AM – 8:00 PM',
-      specialty: 'Belgian Chocolate Ganache & European Petit Fours',
-      distance: '3.2 miles away'
-    }
-  ];
+  const locations = BakeryMapRepository.getLocations();
 
   const handleSelect = (loc: BakeryLocation) => {
     setSelectedId(loc.id);

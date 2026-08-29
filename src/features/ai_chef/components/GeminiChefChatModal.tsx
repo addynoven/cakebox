@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { COLORS, SHADOWS } from '../../../core/theme';
 import { X, Sparkles, Send, Bot, User } from 'lucide-react-native';
-import { askGeminiChef } from '../services/aiChef.service';
+import { askGeminiChef } from '../repositories/aiChef.repository';
 
 interface Message {
   role: 'user' | 'model';
