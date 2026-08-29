@@ -7,12 +7,12 @@ import { colors } from '../core/theme/colors';
 import { Toast } from '../core/components/Toast';
 import { QueryProvider } from '../core/query';
 import { useNetworkStatus } from '../core/network';
-import { useAuthStore } from '../features/auth/store/useAuthStore';
+import { useAuthStore, LoginScreen } from '../features/auth';
 import { useCakeCatalogStore } from '../features/catalog/store/useCakeCatalogStore';
 import { AuthRepository } from '../features/auth/repositories/auth.repository';
 
 function AppContent() {
-  const { notificationToast, setUser, logout } = useAuthStore();
+  const { user, notificationToast, setUser, logout } = useAuthStore();
   const { initLiveSubscription } = useCakeCatalogStore();
   
   // Background network listener with auto-sync on reconnect
@@ -45,6 +45,17 @@ function AppContent() {
       unsubAuth();
     };
   }, []);
+
+  // Upfront Auth Gate: If user is not logged in or signs out, show ONLY LoginScreen
+  if (!user.isLoggedIn) {
+    return (
+      <>
+        <StatusBar style="dark" backgroundColor={colors.bgCream} />
+        <LoginScreen />
+        <Toast message={notificationToast} />
+      </>
+    );
+  }
 
   return (
     <>
