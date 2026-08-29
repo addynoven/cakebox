@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Sparkles, MapPin } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { shadows } from '../theme/shadows';
@@ -20,8 +21,10 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenAIChef,
   onOpenBakeryMap,
 }) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, { paddingTop: Math.max(insets.top, 12) }]}>
       <View style={styles.contentRow}>
         {/* Left Section: Back Button + Title or Logo */}
         <View style={styles.leftSection}>

@@ -72,3 +72,10 @@ mock.module('expo-local-authentication', () => ({
     IRIS: 3,
   },
 }));
+
+mock.module('react-native-safe-area-context', () => ({
+  SafeAreaProvider: ({ children }: any) => children,
+  SafeAreaView: ({ children }: any) => children,
+  useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
+}));
+
