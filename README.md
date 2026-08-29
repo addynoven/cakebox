@@ -9,11 +9,13 @@
 <p align="center">
   <a href="https://github.com/addynoven/cakebox/releases"><img src="https://img.shields.io/github/v/release/addynoven/cakebox?label=Download%20APK&logo=android&color=00C853" /></a>
   <img src="https://img.shields.io/badge/React_Native-0.81.5-61DAFB?logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/Architecture-New_Arch_%2F_TurboModules-FF2A80" />
+  <img src="https://img.shields.io/badge/Expo_Router-v6-000000?logo=expo&logoColor=white" />
+  <img src="https://img.shields.io/badge/Architecture-Feature--Driven_Modular-FF2A80" />
+  <img src="https://img.shields.io/badge/State-TanStack_Query_%2B_Zustand-FF4154?logo=reactquery&logoColor=white" />
   <img src="https://img.shields.io/badge/Storage-MMKV_v4_%2B_NitroModules-FF7A00" />
   <img src="https://img.shields.io/badge/Backend-Firebase_Firestore-FFCA28?logo=firebase&logoColor=black" />
   <img src="https://img.shields.io/badge/AI-Gemini_2.5_Flash-4285F4?logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/Size-24_MB_(arm64--v8a)-00C853" />
+  <img src="https://img.shields.io/badge/Tests-Bun_Test_Passing-00C853?logo=bun&logoColor=white" />
 </p>
 
 ---
@@ -32,45 +34,14 @@
 
 ## 🌟 Key Highlights
 
-- ⚡ **Ultra-Fast Local Storage**: Native **MMKV v4** backed by C++ **NitroModules** with synchronous reads/writes.
-- 🏬 **Real-Time Firestore Catalog**: Automatic two-way sync for live menus, artisanal cake cards, and prices.
+- 🧭 **Expo Router File-Based Navigation**: Native Stack, dynamic routes (`cake/[id]`), modal presentations, and animated bottom tab bars.
+- ⚡ **Dual Caching Layer (TanStack Query + MMKV v4)**: In-memory stale-while-revalidate server caching paired with lightning-fast C++ NitroModules disk persistence.
+- 📡 **Automatic Background Offline Sync**: Real-time NetInfo connectivity listener that queues offline orders and syncs them automatically upon reconnect.
+- 🛡️ **Defensive Error Resilience**: Root `ErrorBoundary` with recovery UI, typed `Result<T, E>` pattern, and structured error domain logging.
+- 🏬 **Repository Pattern & Data Mappers**: Firestore & Supabase SDK calls abstracted behind clean domain mappers (`firestoreMappers.ts`) and repositories.
 - 🎨 **3D Interactive Cake Studio**: Real-time layer visualizer for sponge flavors, frosting bowls, drip glazes, toppers, and dynamic tier pricing.
 - 👩‍🍳 **Chef Rosette AI Concierge**: Embedded AI pastry consultant powered by **Gemini 2.5 Flash** for flavor pairing, portion estimation, and dietary recommendations.
-- 📦 **Offline-First Resilience**: Full cart and order queue persistence with automatic background cloud sync when online.
-- 🚀 **Optimized Release APK**: 24 MB standalone binary for `arm64-v8a` with **R8 / ProGuard** dead-code minification and resource shrinking.
-
----
-
-## 📱 Features
-
-### 1. 🎂 Dynamic Menu & Cake Catalog
-- Curated categories: **Birthday**, **Wedding**, **Custom 3D**, and **Artisanal Cupcakes**.
-- Rich product details with size selection (6", 8", 10", or multi-tier), allergen breakdown, and ingredient badges.
-- Instant search and category filtering with responsive UI feedback.
-
-### 2. ✨ 3D Interactive Custom Cake Builder
-- **Tier Configuration**: Single-tier or multi-tier wedding cakes.
-- **Base Sponge Selection**: Madagascar Vanilla, Dutch Chocolate Fudge, Crimson Red Velvet, or Funfetti Rainbow.
-- **Frosting Palette**: Whipped Chocolate Ganache, Bourbon Vanilla Cream, Strawberry Cloud, or Salted Caramel.
-- **Drip Glaze Effects**: Strawberry Pink Drip, Dark Chocolate Drip, Cream White Drip, Amber Caramel Drip, or None.
-- **Custom Inscription & Toppers**: Pre-set celebration banners and personalized custom messages with live preview.
-
-### 3. 👩‍🍳 Chef Rosette — AI Pastry Concierge
-- Integrated **Gemini 2.5 Flash** AI pastry chef.
-- Quick prompts for:
-  - *Sizing & Servings Calculator* (exact diameter & tier guidance based on guest count)
-  - *Dietary & Allergen Guidance* (eggless, gluten-free, vegan alternatives)
-  - *Flavor Pairing Recommendations* (complementary sponges, fillings, and glazes)
-  - *Budget Planning* (tailoring recommendations to party budgets)
-
-### 4. 🛒 Smart Cart & Checkout Engine
-- Custom-built and catalog cakes combined in unified cart.
-- Dynamic promo code engine (e.g., `SWEET10` for 10% discount).
-- Multiple delivery methods: **Express Delivery** or **Store Pickup**.
-- Simulated payment checkout with delivery date/time slot picker and custom gift message notes.
-
-### 5. 📍 Bakery Hubs Interactive Map
-- Visual map modal with live pickup hub cards, open hours, and instant distance calculations.
+- 🧪 **Integration-First Testing**: High-speed test harness powered by Bun (`bun test`) validating core domain logic and data transformations in <300ms.
 
 ---
 
@@ -80,81 +51,74 @@
                                   +-----------------------+
                                   |    CakeBox Mobile     |
                                   | React Native 0.81.5   |
-                                  |   (New Architecture)  |
+                                  |   (Expo Router v6)    |
                                   +-----------+-----------+
                                               |
                      +------------------------+------------------------+
                      |                        |                        |
            +---------v---------+    +---------v---------+    +---------v---------+
-           |  State Management |    |   Cloud Backend   |    |    AI Services    |
-           |  Zustand 5.0      |    |  Firestore & Auth |    | Google Gemini API |
-           |  MMKV v4 + Nitro  |    |  Realtime Sync    |    |  2.5 Flash Model  |
+           |  State & Caching  |    |   Cloud Backend   |    |    AI Services    |
+           | TanStack Query v5 |    |  Firestore & Auth |    | Google Gemini API |
+           | Zustand 5 + MMKV  |    |  Realtime Sync    |    |  2.5 Flash Model  |
            +-------------------+    +-------------------+    +-------------------+
 ```
 
 - **Framework**: [React Native 0.81.5](https://reactnative.dev/) with [Expo 54](https://expo.dev/)
-- **Native Architecture**: Enabled **New Architecture** (TurboModules + Fabric)
-- **Local Storage**: [`react-native-mmkv` v4](https://github.com/mrousavy/react-native-mmkv) with [`react-native-nitro-modules`](https://github.com/mrousavy/nitro) C++ bindings
-- **State Management**: [Zustand 5](https://zustand.docs.pmnd.rs/) with custom synchronous `mmkvStateStorage` adapter
+- **Navigation**: [Expo Router v6](https://docs.expo.dev/router/introduction/) (file-based routing)
+- **Data Caching & Server State**: [TanStack Query v5](https://tanstack.com/query) with domain query key factories
+- **Client Storage**: [`react-native-mmkv` v4](https://github.com/mrousavy/react-native-mmkv) with [`react-native-nitro-modules`](https://github.com/mrousavy/nitro) C++ bindings
+- **Client State**: [Zustand 5](https://zustand.docs.pmnd.rs/) with MMKV state storage adapter
+- **Validation**: [Zod](https://zod.dev/) runtime schema validation for configs & domain models
 - **Backend & Database**: [Firebase v12](https://firebase.google.com/) (Cloud Firestore & Authentication)
 - **AI Engine**: `@google/genai` (Gemini 2.5 Flash)
-- **Icons & Graphics**: `lucide-react-native`, `react-native-svg`, `expo-linear-gradient`
+- **Network Resilience**: `@react-native-community/netinfo`
+- **Testing**: Bun Test (`bun test`)
 
 ---
 
-## 📂 Project Structure
+## 📂 Feature-Driven Project Structure
 
 ```
 cakebox/
-├── android/                   # Native Android project with C++ CMake builds
-│   ├── app/
-│   │   ├── build.gradle       # R8 minification, Hermes bytecode & ABI config
-│   │   └── proguard-rules.pro # NitroModules, MMKV & TurboModule keep rules
-│   └── gradle.properties      # reactNativeArchitectures=arm64-v8a
-├── assets/                    # Optimized icons, splash artwork & wordmarks
-│   ├── logo.png               # High-res circular cupcake brand mark
-│   ├── logo_wordmark.png      # CakeBox die-cut sticker wordmark
-│   └── screenshots/           # High-res UI showcase previews
 ├── src/
-│   ├── components/            # Feature-oriented UI screens & components
-│   │   ├── BakeryMapModal.tsx
-│   │   ├── BottomNav.tsx
-│   │   ├── CakeCustomizerScreen.tsx
-│   │   ├── CakeDoodles.tsx
-│   │   ├── CartScreen.tsx
-│   │   ├── CatalogScreen.tsx
-│   │   ├── CheckoutModal.tsx
-│   │   ├── DeviceFrame.tsx
-│   │   ├── GeminiChefChatModal.tsx
-│   │   ├── HomeScreen.tsx
-│   │   ├── LoginScreen.tsx
-│   │   ├── OrdersProfileScreen.tsx
-│   │   ├── ProductDetailScreen.tsx
-│   │   ├── SplashScreen.tsx
-│   │   └── TopBar.tsx
-│   ├── core/
-│   │   └── storage/           # Native MMKV initialization
-│   │       ├── mmkv.ts
-│   │       └── index.ts
-│   ├── data/
-│   │   └── cakes.ts           # Curated seed cakes, sponges & frostings
-│   ├── services/
-│   │   ├── firebase.ts        # Firestore CRUD & realtime listeners
-│   │   └── gemini.ts          # Chef Rosette Gemini AI client
-│   ├── store/                 # Persistent Zustand stores
-│   │   ├── mmkvStorage.ts     # MMKV StateStorage adapter
-│   │   ├── useCakeStore.ts    # Catalog, filters & selected cake
-│   │   ├── useCartStore.ts    # Cart items, orders & sync queues
-│   │   ├── useUserStore.ts    # User profile, wishlist & offline mode
-│   │   └── index.ts           # Unified barrel export
-│   ├── utils/
-│   │   ├── storage.ts         # Fast synchronous MMKV getters
-│   │   └── theme.ts           # Design tokens, colors & shadows
-│   ├── App.tsx                # Master screen router & lifecycle
-│   └── types.ts               # Shared TypeScript schemas
-├── app.json                   # Expo configuration
+│   ├── app/                           # Expo Router File-Based Navigation
+│   │   ├── (tabs)/                    # Native Bottom Tabs
+│   │   │   ├── _layout.tsx
+│   │   │   ├── index.tsx              # Home Screen
+│   │   │   ├── menu.tsx               # Menu / Catalog Screen
+│   │   │   ├── custom.tsx             # 3D Customizer Screen
+│   │   │   ├── cart.tsx               # Shopping Cart Screen
+│   │   │   └── orders.tsx             # Orders & Profile Screen
+│   │   ├── cake/
+│   │   │   └── [id].tsx               # Dynamic Product Detail Route
+│   │   ├── auth/
+│   │   │   └── login.tsx              # Auth Modal Route
+│   │   ├── _layout.tsx                # Root Provider, ErrorBoundary & Stack
+│   │   └── index.tsx                  # Root Redirect
+│   ├── core/                          # Shared System Foundations
+│   │   ├── api/                       # Firebase instance, Mappers & HttpClient
+│   │   ├── components/                # Tokenized UI primitives (Button, Card, Badge, Input, Toast)
+│   │   ├── config/                    # Validated Zod ConfigSchema
+│   │   ├── errors/                    # ErrorBoundary, AppError & Result<T, E>
+│   │   ├── network/                   # useNetworkStatus & auto-sync listener
+│   │   ├── query/                     # QueryClient & QueryProvider
+│   │   ├── storage/                   # Synchronous MMKV storage wrapper
+│   │   └── theme/                     # Colors, Spacing, Typography & Shadows tokens
+│   ├── features/                      # Co-located Domain Feature Modules
+│   │   ├── catalog/                   # Models, Repositories, Query Hooks & Views
+│   │   ├── customizer/                # 3D Cake Visualizer & Customizer Studio
+│   │   ├── cart/                      # Cart Models, Orders Repository & Store
+│   │   ├── auth/                      # User Profile, Auth Repository & Login
+│   │   ├── ai_chef/                   # Gemini 2.5 Flash AI Pastry Service
+│   │   └── map/                       # Bakery Hubs Location Modals
+│   ├── data/                          # Seed data & fallback cake models
+│   ├── types.ts                       # Public domain type re-exports
+│   └── store/                         # Unified Zustand store bridges
+├── bunfig.toml                        # Bun test configuration
+├── test-setup.ts                      # Integration test mock preload
+├── app.json                           # Expo configuration
 ├── package.json
-└── tsconfig.json
+└── tsconfig.json                      # Strict TypeScript configuration
 ```
 
 ---
@@ -164,20 +128,28 @@ cakebox/
 ### Prerequisites
 - **Node.js** >= 18 or **Bun** >= 1.1
 - **Android Studio** with Android SDK 34/35 & NDK installed
-- Running Android Emulator or connected physical device
 
 ### 1. Install Dependencies
 ```bash
 bun install
-# or
-npm install
 ```
 
-### 2. Firebase & Gemini Setup
-1. Place your Firebase credentials in `firebase-applet-config.json` or configure in `src/services/firebase.ts`.
-2. Configure your Gemini API Key in `src/services/gemini.ts` or set `EXPO_PUBLIC_GEMINI_API_KEY`.
+### 2. Run Test Suite
+```bash
+bun test
+```
 
-### 3. Run on Android Device / Emulator
+### 3. Type Checking
+```bash
+bun run ts:check
+```
+
+### 4. Run Development Server
+```bash
+bun run start
+```
+
+### 5. Build and Install Native Android Dev Build
 Because `react-native-mmkv` v4 utilizes **C++ NitroModules**, run using the native dev build:
 
 ```bash

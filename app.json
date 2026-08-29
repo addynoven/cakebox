@@ -2,6 +2,7 @@
   "expo": {
     "name": "CakeBox",
     "slug": "cakebox",
+    "scheme": "cakebox",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,12 +22,15 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFF8F8"
       },
-      "package": "com.cakebox.app"
+      "package": "com.cakebox.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "bundler": "metro"
     },
     "plugins": [
+      "expo-router",
       "expo-web-browser",
       "@react-native-google-signin/google-signin"
     ]

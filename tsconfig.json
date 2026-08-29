@@ -9,7 +9,7 @@
     "isolatedModules": true,
     "allowJs": true,
     "jsx": "react-jsx",
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "paths": {
       "@/*": [

@@ -119,7 +119,7 @@ export default function App() {
     initApp();
 
     // Subscribe to live Firestore cake catalog updates
-    const unsubscribeCakes = subscribeCakesFromFirestore((updatedCakes) => {
+    const unsubscribeCakes = subscribeCakesFromFirestore((updatedCakes: CakeItem[]) => {
       if (updatedCakes && updatedCakes.length > 0) {
         setCakes(updatedCakes);
       }
