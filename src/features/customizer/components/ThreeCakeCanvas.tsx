@@ -15,6 +15,58 @@ function smoothDamp(current: number, target: number, lambda: number, dt: number)
   return current + (target - current) * (1 - Math.exp(-lambda * dt));
 }
 
+// Realistic 3D Whipped Cream Rosette Swirl
+function CreamRosette({ position, scale = 1, color = '#FFFBF5' }: { position: [number, number, number]; scale?: number; color?: string }) {
+  return (
+    <group position={position} scale={scale}>
+      <mesh position={[0, 0.05, 0]}>
+        <sphereGeometry args={[0.16, 14, 14]} />
+        <meshStandardMaterial color={color} roughness={0.35} metalness={0.05} />
+      </mesh>
+      <mesh position={[0, 0.14, 0]}>
+        <coneGeometry args={[0.12, 0.16, 12]} />
+        <meshStandardMaterial color={color} roughness={0.35} metalness={0.05} />
+      </mesh>
+    </group>
+  );
+}
+
+// Realistic 3D Strawberry with Seed Details & Green Leaves
+function RealisticStrawberry({ position, rotation = [0, 0, 0], scale = 1 }: { position: [number, number, number]; rotation?: [number, number, number]; scale?: number }) {
+  return (
+    <group position={position} rotation={rotation as any} scale={scale}>
+      {/* Strawberry Body (Glossy ruby red) */}
+      <mesh position={[0, 0.2, 0]}>
+        <coneGeometry args={[0.26, 0.52, 18]} />
+        <meshStandardMaterial color="#D90429" roughness={0.25} metalness={0.08} />
+      </mesh>
+      <mesh position={[0, 0.38, 0]}>
+        <sphereGeometry args={[0.25, 16, 16]} />
+        <meshStandardMaterial color="#D90429" roughness={0.25} metalness={0.08} />
+      </mesh>
+
+      {/* Green Stem Calyx Leaves */}
+      {[0, 1.25, 2.5, 3.75, 5.0].map((angle, i) => (
+        <mesh
+          key={i}
+          position={[Math.cos(angle) * 0.12, 0.44, Math.sin(angle) * 0.12]}
+          rotation={[0.3, angle, 0.4]}
+        >
+          <coneGeometry args={[0.08, 0.16, 5]} />
+          <meshStandardMaterial color="#2B9348" roughness={0.5} />
+        </mesh>
+      ))}
+
+      {/* Strawberry Top Stem */}
+      <mesh position={[0, 0.52, 0]} rotation={[0.1, 0, 0.15]}>
+        <cylinderGeometry args={[0.025, 0.03, 0.12, 8]} />
+        <meshStandardMaterial color="#1E5E2E" roughness={0.6} />
+      </mesh>
+    </group>
+  );
+}
+
+// 3D Cake Mesh Composition
 function CakeModel({ config, rotationY }: Cake3DProps) {
   const groupRef = useRef<Group>(null);
 
@@ -24,86 +76,117 @@ function CakeModel({ config, rotationY }: Cake3DProps) {
   const hasDrip = config.drip?.id !== 'none' && config.drip?.color && config.drip?.color !== 'transparent';
   const showSprinkles = config.toppings?.sprinkles ?? true;
   const showFruits = config.toppings?.fruits ?? true;
+  const showTopper = config.toppings?.topper ?? true;
+  const topperText = config.toppings?.topperText || 'Happy Birthday';
 
   useFrame((_, delta) => {
     if (groupRef.current) {
-      // Smoothly interpolate rotation to rotationY
       groupRef.current.rotation.y = smoothDamp(
         groupRef.current.rotation.y,
         rotationY,
-        4,
+        4.5,
         delta
       );
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.6, 0]}>
-      {/* 1. Ceramic Cake Stand / Pedestal */}
-      <mesh position={[0, -0.15, 0]}>
-        <cylinderGeometry args={[2.3, 2.4, 0.15, 32]} />
-        <meshStandardMaterial color="#FFFFFF" roughness={0.2} metalness={0.1} />
-      </mesh>
-      <mesh position={[0, -0.28, 0]}>
-        <cylinderGeometry args={[0.9, 1.4, 0.15, 32]} />
-        <meshStandardMaterial color="#FAF5F0" roughness={0.3} />
-      </mesh>
+    <group ref={groupRef} position={[0, -0.65, 0]}>
+      {/* 1. Ceramic Cake Stand / Pedestal with Gold Rim */}
+      <group position={[0, -0.12, 0]}>
+        {/* Main plate */}
+        <mesh position={[0, 0, 0]}>
+          <cylinderGeometry args={[2.35, 2.45, 0.12, 48]} />
+          <meshStandardMaterial color="#FFFFFF" roughness={0.15} metalness={0.05} />
+        </mesh>
+        {/* Gold Trim Ring */}
+        <mesh position={[0, 0.06, 0]}>
+          <torusGeometry args={[2.36, 0.03, 16, 48]} />
+          <meshStandardMaterial color="#D4AF37" roughness={0.2} metalness={0.8} />
+        </mesh>
+        {/* Stand Base */}
+        <mesh position={[0, -0.22, 0]}>
+          <cylinderGeometry args={[1.1, 1.5, 0.22, 36]} />
+          <meshStandardMaterial color="#FDFBF7" roughness={0.2} />
+        </mesh>
+      </group>
 
-      {/* 2. Main Cake Body (Frosting Outer Layer) */}
+      {/* 2. Main Cake Body (Smooth Frosting Outer Tier) */}
       <mesh position={[0, 0.65, 0]}>
-        <cylinderGeometry args={[1.8, 1.8, 1.4, 48]} />
+        <cylinderGeometry args={[1.85, 1.85, 1.42, 64]} />
         <meshStandardMaterial
           color={frostingColor}
-          roughness={0.35}
-          metalness={0.05}
+          roughness={0.32}
+          metalness={0.04}
         />
       </mesh>
 
-      {/* 3. Exposed Middle Sponge Slice (Visual layer) */}
+      {/* 3. Exposed Moist Sponge Slice (Middle Layer) */}
       <mesh position={[0, 0.65, 0]}>
-        <cylinderGeometry args={[1.81, 1.81, 0.28, 48]} />
+        <cylinderGeometry args={[1.855, 1.855, 0.26, 64]} />
         <meshStandardMaterial
           color={spongeColor}
-          roughness={0.8}
+          roughness={0.85}
           metalness={0.0}
         />
       </mesh>
+      {/* Thin Cream Core inside the Sponge */}
+      <mesh position={[0, 0.65, 0]}>
+        <cylinderGeometry args={[1.858, 1.858, 0.05, 64]} />
+        <meshStandardMaterial color="#FFFDF9" roughness={0.25} />
+      </mesh>
 
-      {/* 4. Dripping Glaze Cap */}
+      {/* 4. Base Rim Whipped Cream Pearls */}
+      {Array.from({ length: 24 }).map((_, idx) => {
+        const angle = (idx / 24) * Math.PI * 2;
+        const x = Math.cos(angle) * 1.88;
+        const z = Math.sin(angle) * 1.88;
+        return (
+          <mesh key={idx} position={[x, 0.04, z]}>
+            <sphereGeometry args={[0.09, 12, 12]} />
+            <meshStandardMaterial color={frostingColor} roughness={0.3} />
+          </mesh>
+        );
+      })}
+
+      {/* 5. Dripping Glaze Cap with Tear-drop Beaded Drips */}
       {hasDrip && (
         <group position={[0, 1.36, 0]}>
-          {/* Top glaze disk */}
-          <mesh position={[0, 0, 0]}>
-            <cylinderGeometry args={[1.82, 1.82, 0.05, 48]} />
+          {/* Top mirror glaze cap */}
+          <mesh position={[0, 0.02, 0]}>
+            <cylinderGeometry args={[1.86, 1.86, 0.06, 64]} />
             <meshStandardMaterial
               color={dripColor}
-              roughness={0.15}
-              metalness={0.2}
+              roughness={0.12}
+              metalness={0.25}
             />
           </mesh>
 
-          {/* Glaze drip beads down the side */}
+          {/* Organic cascading glaze drips */}
           {[
-            { angle: 0, height: 0.5, radius: 0.12 },
-            { angle: 0.7, height: 0.8, radius: 0.14 },
-            { angle: 1.5, height: 0.4, radius: 0.11 },
-            { angle: 2.3, height: 0.9, radius: 0.15 },
-            { angle: 3.1, height: 0.6, radius: 0.13 },
-            { angle: 3.9, height: 0.85, radius: 0.14 },
-            { angle: 4.7, height: 0.45, radius: 0.12 },
-            { angle: 5.5, height: 0.75, radius: 0.13 },
+            { angle: 0.1, length: 0.72, width: 0.14 },
+            { angle: 0.6, length: 0.42, width: 0.11 },
+            { angle: 1.1, length: 0.95, width: 0.16 },
+            { angle: 1.7, length: 0.55, width: 0.12 },
+            { angle: 2.2, length: 0.88, width: 0.15 },
+            { angle: 2.9, length: 0.38, width: 0.10 },
+            { angle: 3.5, length: 1.05, width: 0.17 },
+            { angle: 4.1, length: 0.62, width: 0.13 },
+            { angle: 4.7, length: 0.92, width: 0.15 },
+            { angle: 5.3, length: 0.48, width: 0.11 },
+            { angle: 5.9, length: 0.78, width: 0.14 },
           ].map((drip, idx) => {
-            const x = Math.cos(drip.angle) * 1.81;
-            const z = Math.sin(drip.angle) * 1.81;
+            const x = Math.cos(drip.angle) * 1.86;
+            const z = Math.sin(drip.angle) * 1.86;
             return (
-              <group key={idx} position={[x, -drip.height / 2, z]}>
+              <group key={idx} position={[x, -drip.length / 2, z]}>
                 <mesh>
-                  <cylinderGeometry args={[drip.radius * 0.8, drip.radius, drip.height, 12]} />
-                  <meshStandardMaterial color={dripColor} roughness={0.15} metalness={0.2} />
+                  <cylinderGeometry args={[drip.width * 0.7, drip.width, drip.length, 14]} />
+                  <meshStandardMaterial color={dripColor} roughness={0.12} metalness={0.25} />
                 </mesh>
-                <mesh position={[0, -drip.height / 2, 0]}>
-                  <sphereGeometry args={[drip.radius, 12, 12]} />
-                  <meshStandardMaterial color={dripColor} roughness={0.15} metalness={0.2} />
+                <mesh position={[0, -drip.length / 2, 0]}>
+                  <sphereGeometry args={[drip.width * 1.15, 14, 14]} />
+                  <meshStandardMaterial color={dripColor} roughness={0.12} metalness={0.25} />
                 </mesh>
               </group>
             );
@@ -111,71 +194,113 @@ function CakeModel({ config, rotationY }: Cake3DProps) {
         </group>
       )}
 
-      {/* 5. Procedural 3D Sprinkles */}
+      {/* 6. Top Crown Piped Whipped Cream Rosettes (10 around perimeter) */}
+      {Array.from({ length: 10 }).map((_, idx) => {
+        const angle = (idx / 10) * Math.PI * 2;
+        const x = Math.cos(angle) * 1.55;
+        const z = Math.sin(angle) * 1.55;
+        return (
+          <CreamRosette
+            key={idx}
+            position={[x, 1.4, z]}
+            scale={0.95}
+            color={frostingColor}
+          />
+        );
+      })}
+
+      {/* 7. Procedural Cylindrical Sprinkles */}
       {showSprinkles && (
-        <group position={[0, 1.38, 0]}>
+        <group position={[0, 1.41, 0]}>
           {[
-            { x: 0.4, z: 0.5, color: '#F43F5E', rot: [0.2, 0.4, 0] },
-            { x: -0.6, z: 0.3, color: '#3B82F6', rot: [0.1, 1.2, 0] },
-            { x: 0.2, z: -0.7, color: '#10B981', rot: [0, 0.8, 0.3] },
-            { x: -0.3, z: -0.4, color: '#F59E0B', rot: [0.3, 0.2, 0.5] },
-            { x: 0.8, z: -0.2, color: '#EC4899', rot: [0.4, 0.9, 0.1] },
-            { x: -0.8, z: 0.6, color: '#8B5CF6', rot: [0.1, 0.3, 0.4] },
-            { x: 0.0, z: 0.9, color: '#F43F5E', rot: [0.5, 0.1, 0] },
+            { x: 0.35, z: 0.45, c: '#FF477E', r: [0.1, 0.4, 0] },
+            { x: -0.55, z: 0.25, c: '#3A86FF', r: [0.1, 1.2, 0] },
+            { x: 0.2, z: -0.65, c: '#38B000', r: [0, 0.8, 0.3] },
+            { x: -0.28, z: -0.38, c: '#FFB703', r: [0.3, 0.2, 0.5] },
+            { x: 0.75, z: -0.18, c: '#FF006E', r: [0.4, 0.9, 0.1] },
+            { x: -0.75, z: 0.55, c: '#8338EC', r: [0.1, 0.3, 0.4] },
+            { x: 0.05, z: 0.85, c: '#FF477E', r: [0.5, 0.1, 0] },
+            { x: 0.6, z: 0.6, c: '#FB8500', r: [0.2, 0.7, 0.1] },
+            { x: -0.6, z: -0.6, c: '#3A86FF', r: [0.1, 0.5, 0.3] },
           ].map((sp, idx) => (
-            <mesh
-              key={idx}
-              position={[sp.x, 0.02, sp.z]}
-              rotation={sp.rot as any}
-            >
-              <capsuleGeometry args={[0.03, 0.12, 4, 8]} />
-              <meshStandardMaterial color={sp.color} roughness={0.3} />
+            <mesh key={idx} position={[sp.x, 0.02, sp.z]} rotation={sp.r as any}>
+              <capsuleGeometry args={[0.028, 0.12, 6, 10]} />
+              <meshStandardMaterial color={sp.c} roughness={0.25} />
             </mesh>
           ))}
         </group>
       )}
 
-      {/* 6. 3D Strawberries & Blueberries */}
+      {/* 8. Fresh Realistic Strawberries & Plump Blueberries */}
       {showFruits && (
-        <group position={[0, 1.38, 0]}>
-          {/* Main Strawberry 1 */}
-          <group position={[0.4, 0.25, 0.2]} rotation={[0.1, 0.4, -0.1]}>
-            <mesh>
-              <coneGeometry args={[0.3, 0.55, 16]} />
-              <meshStandardMaterial color="#E11D48" roughness={0.25} />
-            </mesh>
-            {/* Green Leaf Stem */}
-            <mesh position={[0, 0.28, 0]}>
-              <coneGeometry args={[0.22, 0.08, 6]} />
-              <meshStandardMaterial color="#10B981" roughness={0.5} />
-            </mesh>
-          </group>
-
+        <group position={[0, 1.41, 0]}>
+          {/* Strawberry 1 (Center Hero) */}
+          <RealisticStrawberry
+            position={[0.3, 0, 0.15]}
+            rotation={[0.12, 0.35, -0.1]}
+            scale={1.1}
+          />
           {/* Strawberry 2 */}
-          <group position={[-0.3, 0.25, 0.4]} rotation={[-0.1, -0.6, 0.2]}>
-            <mesh>
-              <coneGeometry args={[0.26, 0.48, 16]} />
-              <meshStandardMaterial color="#F43F5E" roughness={0.25} />
+          <RealisticStrawberry
+            position={[-0.25, 0, 0.35]}
+            rotation={[-0.15, -0.6, 0.2]}
+            scale={0.95}
+          />
+          {/* Strawberry 3 */}
+          <RealisticStrawberry
+            position={[0.0, 0, -0.35]}
+            rotation={[0.2, 2.1, -0.15]}
+            scale={0.9}
+          />
+
+          {/* Plump Glossy Blueberries */}
+          {[
+            { x: -0.45, y: 0.1, z: -0.12, r: 0.13, c: '#1D3557' },
+            { x: 0.55, y: 0.09, z: -0.32, r: 0.12, c: '#183059' },
+            { x: -0.05, y: 0.11, z: 0.6, r: 0.14, c: '#274C77' },
+            { x: 0.45, y: 0.08, z: 0.55, r: 0.11, c: '#1D3557' },
+          ].map((b, idx) => (
+            <mesh key={idx} position={[b.x, b.y, b.z]}>
+              <sphereGeometry args={[b.r, 18, 18]} />
+              <meshStandardMaterial color={b.c} roughness={0.22} metalness={0.05} />
             </mesh>
-            <mesh position={[0, 0.25, 0]}>
-              <coneGeometry args={[0.18, 0.07, 6]} />
-              <meshStandardMaterial color="#10B981" roughness={0.5} />
+          ))}
+        </group>
+      )}
+
+      {/* 9. Golden Acrylic Topper Sign */}
+      {showTopper && (
+        <group position={[0, 1.48, 0]}>
+          {/* Two acrylic sticks inserted into cake */}
+          <mesh position={[-0.45, 0.35, 0]}>
+            <cylinderGeometry args={[0.02, 0.02, 0.7, 10]} />
+            <meshStandardMaterial color="#E0CDA9" roughness={0.1} transparent opacity={0.7} />
+          </mesh>
+          <mesh position={[0.45, 0.35, 0]}>
+            <cylinderGeometry args={[0.02, 0.02, 0.7, 10]} />
+            <meshStandardMaterial color="#E0CDA9" roughness={0.1} transparent opacity={0.7} />
+          </mesh>
+
+          {/* Golden Badge Sign Header */}
+          <group position={[0, 0.82, 0]}>
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.95, 0.95, 0.05, 36]} />
+              <meshStandardMaterial
+                color="#FFFDF9"
+                roughness={0.1}
+                metalness={0.1}
+              />
+            </mesh>
+            {/* Gold Ring Border */}
+            <mesh>
+              <torusGeometry args={[0.96, 0.04, 16, 36]} />
+              <meshStandardMaterial
+                color="#D4AF37"
+                roughness={0.2}
+                metalness={0.85}
+              />
             </mesh>
           </group>
-
-          {/* Blueberries */}
-          <mesh position={[-0.5, 0.1, -0.2]}>
-            <sphereGeometry args={[0.14, 16, 16]} />
-            <meshStandardMaterial color="#2563EB" roughness={0.3} />
-          </mesh>
-          <mesh position={[0.6, 0.1, -0.4]}>
-            <sphereGeometry args={[0.13, 16, 16]} />
-            <meshStandardMaterial color="#1D4ED8" roughness={0.3} />
-          </mesh>
-          <mesh position={[0.0, 0.1, -0.6]}>
-            <sphereGeometry args={[0.15, 16, 16]} />
-            <meshStandardMaterial color="#3B82F6" roughness={0.3} />
-          </mesh>
         </group>
       )}
     </group>
@@ -214,22 +339,23 @@ export const ThreeCakeCanvas: React.FC<ThreeCakeCanvasProps> = ({
   return (
     <View style={[styles.container, { width, height }]} {...panResponder.panHandlers}>
       <Canvas
-        camera={{ position: [0, 2.6, 4.8], fov: 45 }}
+        camera={{ position: [0, 3.0, 4.8], fov: 42 }}
         style={styles.canvas}
       >
-        {/* Studio 3-Point Lighting */}
-        <ambientLight intensity={0.8} />
-        <directionalLight position={[5, 8, 5]} intensity={1.2} />
-        <pointLight position={[-4, 3, -3]} intensity={0.6} color="#FFE4E6" />
-        <directionalLight position={[0, -2, 2]} intensity={0.3} color="#FFFFFF" />
+        {/* High-End Bakery Studio 3-Point Lighting */}
+        <ambientLight intensity={0.95} color="#FFFBF5" />
+        <directionalLight position={[4, 9, 6]} intensity={1.4} />
+        <pointLight position={[-4, 4, -3]} intensity={0.7} color="#FFE4E6" />
+        <directionalLight position={[0, -2, 3]} intensity={0.4} color="#FFFFFF" />
+        <pointLight position={[0, 4, 3]} intensity={0.5} color="#FFF1E6" />
 
-        {/* The 3D Cake Mesh */}
+        {/* The Realistic 3D Cake Mesh */}
         <CakeModel config={config} rotationY={rotationY} />
       </Canvas>
 
       {/* 360 Gesture Hint Badge */}
       <View style={styles.hintBadge} pointerEvents="none">
-        <Text style={styles.hintText}>👆 Swipe to rotate 360°</Text>
+        <Text style={styles.hintText}>✨ Drag to spin 360°</Text>
       </View>
     </View>
   );
@@ -249,15 +375,16 @@ const styles = StyleSheet.create({
   },
   hintBadge: {
     position: 'absolute',
-    bottom: 8,
+    bottom: 6,
     backgroundColor: 'rgba(59, 44, 48, 0.75)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   hintText: {
     color: colors.white,
     fontSize: 10,
     fontWeight: '800',
+    letterSpacing: 0.3,
   },
 });
