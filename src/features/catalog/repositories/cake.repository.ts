@@ -2,7 +2,7 @@ import { collection, getDocs, onSnapshot, Unsubscribe } from 'firebase/firestore
 import { db } from '../../../core/api/firebase';
 import { mapCakeDoc } from '../../../core/api/firestoreMappers';
 import { captureError } from '../../../core/errors';
-import { INITIAL_CAKES } from '../../../data/cakes';
+import { INITIAL_CAKES } from '../data/seedCakes';
 import { CakeItem } from '../models/cake.model';
 
 export class CakeRepository {

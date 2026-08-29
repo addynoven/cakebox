@@ -10,7 +10,7 @@ import {
   Platform
 } from 'react-native';
 import { CustomCakeConfig, CartItem, CakeItem } from '../../../types';
-import { BASE_SPONGES, FROSTING_OPTIONS, DRIP_OPTIONS, TOPPER_STYLES } from '../../../data/cakes';
+import { BASE_SPONGES, FROSTING_OPTIONS, DRIP_OPTIONS, TOPPER_STYLES } from '../data/customizerOptions';
 import { CakeVisualizer } from '../components/CakeVisualizer';
 import { CakeDoodles } from '../../catalog/components/CakeDoodles';
 import { COLORS, SHADOWS } from '../../../core/theme';

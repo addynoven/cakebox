@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from 'bun:test';
 import { useCartStore } from '../store/useCartStore';
 import { mapOrderDoc } from '../../../core/api/firestoreMappers';
-import { INITIAL_CAKES } from '../../../data/cakes';
+import { INITIAL_CAKES } from '../../catalog/data/seedCakes';
 import { Order } from '../models/cart.model';
 
 describe('Cart & Order Module Integration', () => {

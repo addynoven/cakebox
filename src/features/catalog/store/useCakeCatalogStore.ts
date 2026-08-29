@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { CakeItem } from '../models/cake.model';
-import { INITIAL_CAKES } from '../../../data/cakes';
+import { INITIAL_CAKES } from '../data/seedCakes';
 import { mmkvStateStorage } from '../../../core/storage';
 import { CakeRepository } from '../repositories/cake.repository';
 

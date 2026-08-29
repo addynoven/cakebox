@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { mapCakeDoc } from '../../../core/api/firestoreMappers';
-import { INITIAL_CAKES } from '../../../data/cakes';
+import { INITIAL_CAKES } from '../data/seedCakes';
 import { CakeItemSchema } from '../models/cake.model';
 
 describe('Catalog Module Integration', () => {
