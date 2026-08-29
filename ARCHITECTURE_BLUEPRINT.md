@@ -1,48 +1,134 @@
-# 🏛️ The Production App Architecture Blueprint & Playbook
+# 🏛️ The Production App Architecture Blueprint & Master Playbook
 
-> **The Golden Standard for Building Scalable, Feature-Driven Mobile & Full-Stack Apps.**  
-> *Use this blueprint whenever starting a new React Native / Expo / Full-Stack project.*
+> **The Definitive, Domain-Agnostic Specification for Building Scalable React Native & Full-Stack Apps.**  
+> *Use this blueprint whenever starting ANY new mobile or full-stack project.*
 
 ---
 
 ## 📐 1. The Core 3-Tier Layout
 
-Every production app must have exactly **3 top-level directories** inside `src/`:
+Every production codebase strictly maintains exactly **3 top-level directories** inside `src/`:
 
 ```text
 src/
-├── app/          # 1. Navigation & Routing (Expo Router file-based routes)
-├── core/         # 2. Shared System Foundations (Design tokens, error handling, storage, query)
-└── features/     # 3. Domain Modules (Self-contained business features)
+├── app/          # 1. Navigation & Routing (Expo Router v6 file-based routes)
+├── core/         # 2. Shared System Foundations (Strict file-by-file specification)
+├── features/     # 3. Domain Feature Modules (Self-contained business units)
+└── types.ts      # 4. Global application-level type declarations
 ```
 
 ---
 
-## 🧩 2. The Standard 7-Folder Feature Blueprint
+## 🧱 2. The Complete `src/core/` Specification
 
-Every feature module inside `src/features/<feature_name>/` must follow the exact same predictable folder structure:
+The `src/core/` directory contains all shared infrastructure. It is divided into exactly **8 standardized submodules**:
+
+```text
+src/core/
+├── api/                           # Data transport & cloud SDK adapters
+│   ├── client.ts                  # Cloud SDK initialization (Firebase / Supabase / GraphQL)
+│   ├── entityMappers.ts           # Pure functions mapping raw DB/API payloads to typed domain entities
+│   ├── httpClient.ts              # Traced fetch client (X-Request-ID, 10s auto-timeout, Result returns)
+│   └── index.ts
+│
+├── components/                    # Design system primitives & root guards
+│   ├── Button.tsx                 # Accessible button (variants: primary/outline, loading, a11y labels)
+│   ├── Card.tsx                   # Tokenized rounded container with platform shadows
+│   ├── Badge.tsx                  # Status & promotional pill badges
+│   ├── Input.tsx                  # Accessible text input with label, validation error, and focus ring
+│   ├── Toast.tsx                  # Global floating notification toast
+│   ├── TopBar.tsx                 # Universal screen header (Logo, title, back action, dynamic shortcuts)
+│   ├── DeviceFrame.tsx            # Responsive bezel container for web/tablet previews
+│   ├── FeatureGate.tsx            # Declarative feature flag gate: <FeatureGate flag="..." fallback={...}>
+│   └── index.ts
+│
+├── config/                        # Environment variables & Feature Flags
+│   ├── config.schema.ts           # Zod schema validating all required environment variables
+│   ├── config.ts                  # Validated runtime configuration singleton
+│   ├── featureFlags.schema.ts     # Zod schema for all feature toggles with local offline defaults
+│   ├── useFeatureFlags.ts         # Reactive Zustand + MMKV store for feature flags & dev overrides
+│   └── index.ts
+│
+├── errors/                        # Defensive error architecture & observability
+│   ├── result.ts                  # Type-safe Result<T, E> envelope: { ok: true, data } | { ok: false, error }
+│   ├── error-handler.ts           # AppError class, captureError(), withAsyncErrorCatch()
+│   ├── breadcrumbs.ts             # 50-action circular Flight Recorder ring-buffer (nav, taps, network)
+│   ├── ErrorBoundary.tsx          # Root React crash recovery fallback with retry action
+│   └── index.ts
+│
+├── network/                       # Network resilience & offline synchronization
+│   ├── useNetworkStatus.ts        # NetInfo listener auto-triggering offline queue sync on reconnect
+│   └── index.ts
+│
+├── query/                         # Server-state caching (TanStack Query v5)
+│   ├── queryClient.ts             # QueryClient instance (staleTime: 5m, gcTime: 15m, retry: 2)
+│   ├── QueryProvider.tsx          # Root QueryClientProvider wrapper
+│   └── index.ts
+│
+├── storage/                       # Tiered storage architecture
+│   ├── mmkv.ts                    # Ultra-fast synchronous storage for UI cache, cart, & client state
+│   ├── secureStorage.ts           # Hardware-encrypted storage (iOS Keychain / Android Keystore) for tokens
+│   ├── biometrics.ts              # Native FaceID / Fingerprint local authentication helper
+│   └── index.ts
+│
+└── theme/                         # Centralized design tokens
+    ├── colors.ts                  # Primary, background, surface, border, and semantic colors
+    ├── spacing.ts                 # Standard spacing scale (xs: 4, sm: 8, md: 16, lg: 24, xl: 32)
+    ├── typography.ts              # Font families, sizes, line heights, and weights
+    ├── shadows.ts                 # Platform-safe elevation & shadow presets (soft, medium, highlight)
+    └── index.ts
+```
+
+---
+
+## 🧩 3. The Standard 7-Folder Feature Blueprint
+
+Every domain module inside `src/features/<feature_name>/` must follow this exact structure:
 
 ```text
 src/features/<feature_name>/
-├── components/     # Feature-specific UI widgets (Cards, headers, subviews)
-├── hooks/          # React hooks & TanStack Query/Mutation hooks
-├── models/         # Single source of truth: Zod schemas + z.infer types
-├── repositories/   # Data access layer (Firestore, Supabase, REST APIs + mappers)
-├── screens/        # Top-level screen compositions rendered by app/ routes
-├── store/          # Zustand reactive client state & MMKV persistence
-├── __tests__/      # Integration test suite (testing whole feature flows)
-├── keys.ts         # (Optional) Query key factories for cache invalidation
-└── index.ts        # The "Front Door" barrel export (only public APIs exposed)
+├── components/     # Private UI sub-widgets used only inside this feature
+├── hooks/          # React hooks & TanStack Query/Mutation hooks for this feature
+├── models/         # Single source of truth: Zod schemas + z.infer compile-time types
+├── repositories/   # Data access layer (API/DB queries, local cache fallback, explicit mappers)
+├── screens/        # Composite top-level screens rendered by app/ routes
+├── store/          # Zustand reactive client state & MMKV disk persistence
+├── __tests__/      # Integration test suite (testing whole feature flows in <300ms)
+├── keys.ts         # Query key factories for TanStack Query caching
+└── index.ts        # The "Front Door" barrel export (only public APIs exported)
+```
+
+> **Empty Folder Rule**: If a feature is headless or doesn't need a specific subfolder initially (e.g. no custom `store/` or `screens/`), keep the folder with a `.gitkeep` file to preserve architecture symmetry.
+
+---
+
+## 🧭 4. `src/app/` (Expo Router Routing Layer)
+
+The `src/app/` directory contains **zero business logic**. It acts strictly as a thin routing shell:
+
+```text
+src/app/
+├── _layout.tsx             # Root layout: mounts SafeAreaProvider, ErrorBoundary, QueryProvider, Toast
+├── index.tsx               # Root redirect: forwards user to /(tabs)
+├── (tabs)/                 # Bottom Tab Navigator
+│   ├── _layout.tsx         # Tab bar configuration & dynamic feature-flag tab gating
+│   ├── index.tsx           # Thin route -> renders <FeatureAScreen />
+│   ├── explore.tsx         # Thin route -> renders <FeatureBScreen />
+│   └── profile.tsx         # Thin route -> renders <ProfileScreen />
+├── <feature>/
+│   └── [id].tsx            # Dynamic route -> reads useLocalSearchParams() and renders <DetailScreen id={id} />
+└── auth/
+    └── login.tsx           # Modal presentation route -> renders <LoginScreen />
 ```
 
 ---
 
-## 🛡️ 3. The 6 Non-Negotiable System Pillars
+## 🛡️ 5. The 6 Non-Negotiable System Pillars
 
 | Pillar | Technology | Rule to Follow |
 | :--- | :--- | :--- |
 | **1. Navigation** | **Expo Router v6** | File-based routing with typed dynamic params (`[id].tsx`), native bottom tabs, and modal presentation. Never use monolithic manual `useState` screen routers. |
-| **2. Data Layer** | **Repository Pattern + Mappers** | UI components **never** touch Firebase/Supabase SDKs directly. All raw cloud docs pass through explicit data mappers (`firestoreMappers.ts`) with fallback defaults. |
+| **2. Data Layer** | **Repository Pattern + Mappers** | UI components **never** touch raw database/API SDKs directly. All external data passes through explicit Zod mappers with fallback defaults. |
 | **3. Caching Layer** | **TanStack Query + MMKV** | **Dual Caching**: In-memory stale-while-revalidate for server state (`useQuery`), synchronous native MMKV for client state & offline disk persistence. |
 | **4. Error System** | **Result<T, E> + Flight Recorder** | Safe envelope returns (`{ ok: true, data } | { ok: false, error }`), root `ErrorBoundary` for crash recovery, and 50-action circular breadcrumb ring-buffer. |
 | **5. Tiered Security** | **SecureStore + Biometrics** | Hardware-encrypted storage (**iOS Keychain / Android Keystore**) for auth/payment tokens. Fast MMKV for UI caches. FaceID / Fingerprint unlock via `expo-local-authentication`. |
@@ -50,53 +136,58 @@ src/features/<feature_name>/
 
 ---
 
-## 📋 4. Step-by-Step New Project Checklist (The Todo List)
+## 📋 6. Step-by-Step New Project Checklist (The Todo List)
 
-### Phase 1: Core Scaffolding
-- [ ] Initialize Expo project with TypeScript strict mode enabled (`"strict": true`).
-- [ ] Setup `src/app/`, `src/core/`, and `src/features/`.
-- [ ] Configure `core/theme/` (colors, typography, spacing, shadows tokens).
-- [ ] Configure `core/components/` (atomic primitives: `Button`, `Card`, `Input`, `Badge`, `Toast`, `TopBar`, `FeatureGate`).
-- [ ] Configure `core/errors/` (`AppError`, `result.ts`, `breadcrumbs.ts`, `ErrorBoundary.tsx`).
-- [ ] Configure `core/storage/` (`mmkv.ts`, `secureStorage.ts`, `biometrics.ts`).
-- [ ] Configure `core/query/` (`queryClient.ts` with `staleTime: 5m` and `QueryProvider.tsx`).
-- [ ] Configure `core/network/` (`useNetworkStatus.ts` with NetInfo auto-sync).
+### Phase 1: Tooling & Core Scaffolding
+- [ ] Initialize Expo app with TypeScript strict mode enabled (`"strict": true` in `tsconfig.json`).
+- [ ] Configure `package.json` entry (`"main": "expo-router/entry"`), `babel.config.js`, and `bunfig.toml` + `test-setup.ts`.
+- [ ] Scaffold `src/app/`, `src/core/` (all 8 submodules), and `src/features/`.
+- [ ] Implement `core/theme/` design tokens (`colors.ts`, `spacing.ts`, `typography.ts`, `shadows.ts`).
+- [ ] Implement `core/components/` atomic primitives (`Button`, `Card`, `Input`, `Badge`, `Toast`, `TopBar`, `FeatureGate`).
+- [ ] Implement `core/errors/` (`result.ts`, `error-handler.ts`, `breadcrumbs.ts`, `ErrorBoundary.tsx`).
+- [ ] Implement `core/storage/` (`mmkv.ts`, `secureStorage.ts`, `biometrics.ts`).
+- [ ] Implement `core/config/` (`config.schema.ts`, `config.ts`, `featureFlags.schema.ts`, `useFeatureFlags.ts`).
+- [ ] Implement `core/query/` (`queryClient.ts`, `QueryProvider.tsx`).
+- [ ] Implement `core/network/` (`useNetworkStatus.ts` with auto-sync on reconnect).
 
 ### Phase 2: Building Features (Repeated for Each Feature)
-- [ ] Create `models/<feature>.model.ts` with Zod schema + `export type X = z.infer<typeof XSchema>`.
-- [ ] Create `repositories/<feature>.repository.ts` with typed queries and mappers.
-- [ ] Create `store/use<Feature>Store.ts` with Zustand + MMKV persistence.
-- [ ] Create `hooks/use<Feature>Query.ts` and `keys.ts` for TanStack Query caching.
-- [ ] Build `components/` and composite `screens/`.
-- [ ] Write `__tests__/<feature>.integration.test.ts` testing end-to-end feature logic.
-- [ ] Export public APIs through `index.ts`.
+- [ ] Create `features/<feature>/models/<entity>.model.ts` with Zod schema + inferred TypeScript type.
+- [ ] Create `features/<feature>/repositories/<entity>.repository.ts` returning `Result<T, AppError>`.
+- [ ] Create `features/<feature>/store/use<Feature>Store.ts` with Zustand + MMKV persistence.
+- [ ] Create `features/<feature>/keys.ts` and `hooks/use<Feature>Query.ts` for TanStack Query caching.
+- [ ] Build private `components/` and assemble top-level `screens/`.
+- [ ] Write `__tests__/<feature>.integration.test.ts` testing end-to-end user flows and transformations.
+- [ ] Export public APIs strictly through `index.ts`.
 
-### Phase 3: Routing & Integration
-- [ ] Wire up routes in `src/app/(tabs)/` and dynamic detail paths `src/app/<feature>/[id].tsx`.
+### Phase 3: Routing & App Assembly
+- [ ] Mount routes in `src/app/(tabs)/` and dynamic paths `src/app/<feature>/[id].tsx`.
 - [ ] Wrap root layout in `_layout.tsx` with `SafeAreaProvider`, `ErrorBoundary`, `QueryProvider`, and `Toast`.
-- [ ] Verify 100% strict type safety (`tsc --noEmit`).
-- [ ] Run test suite (`bun test`).
+- [ ] Run `tsc --noEmit` to verify **0 type errors**.
+- [ ] Run `bun test` to verify **100% passing integration tests**.
 
 ---
 
-## 🤖 5. The "Copy-Paste Master Prompt" for Future AI Pair Programming
+## 🤖 7. The "Copy-Paste Master Prompt" for AI Coding Assistants
 
-*When starting a new app or handing requirements to an AI agent, copy and paste this exact prompt:*
+*Copy and paste this exact prompt whenever starting any new application with an AI agent:*
 
 ```text
-I am building a production-grade React Native app with Expo Router. 
-You must strictly follow the Feature-Driven Modular Monolith Architecture:
+I am building a production-grade React Native app with Expo Router.
+You must strictly adhere to the Feature-Driven Modular Monolith Architecture:
 
-1. Directory Structure:
-   - Root in `src/`: only `app/` (Expo Router), `core/` (shared foundations), `features/` (domain modules), and `types.ts`.
-   - Each feature in `src/features/<name>/` MUST have: `components/`, `hooks/`, `models/`, `repositories/`, `screens/`, `store/`, `__tests__/`, and `index.ts`.
+1. Directory Layout:
+   - src/app/ (Expo Router thin routing layer)
+   - src/core/ (8 submodules: api, components, config, errors, network, query, storage, theme)
+   - src/features/<name>/ (Standard 7 folders: components, hooks, models, repositories, screens, store, __tests__, plus keys.ts and index.ts)
+   - src/types.ts
 
-2. Engineering Rules:
-   - TypeScript Strict Mode: No `any`, no `@ts-ignore`.
-   - Data Layer: Use the Repository pattern with explicit Zod runtime data mappers. Never call cloud SDKs directly from UI components.
-   - Caching: Use TanStack Query for server data + MMKV for fast client persistence.
-   - Error Handling: Use `Result<T, E>` pattern for safe returns and maintain a 50-action circular breadcrumb buffer attached to `AppError`.
-   - Security: Store sensitive auth/session tokens in hardware-encrypted SecureStore (Keychain/Keystore).
-   - Testing: Write integration-first tests using `bun:test` testing complete feature flows and schema validations.
-   - Code Style: Lead with the code, keep functions small and focused, and maintain strict front-door encapsulation through `index.ts`.
+2. Architectural Non-Negotiables:
+   - TypeScript Strict Mode: 100% strict types, zero `any`, zero `@ts-ignore`.
+   - Data Layer: Repository pattern with explicit Zod runtime data mappers. Never call cloud SDKs directly from UI components.
+   - Dual Caching: TanStack Query v5 for server state + synchronous MMKV v4 for client persistence.
+   - Error Architecture: Use Result<T, E> return envelopes, root ErrorBoundary, and 50-action circular Flight Recorder breadcrumb buffer.
+   - Tiered Security: Hardware-encrypted SecureStore (Keychain/Keystore) for auth/session tokens + biometric unlock.
+   - Feature Flags: Use Zod featureFlags.schema.ts and <FeatureGate flag="..."> wrapper.
+   - Testing: Write integration-first tests with bun:test testing complete user flows and schema parsing.
+   - Style: Keep functions focused, co-locate code by feature, and maintain strict front-door encapsulation via index.ts.
 ```
