@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Svg, {
   Defs,
   RadialGradient,
@@ -14,6 +14,8 @@ import Svg, {
   Text as SvgText
 } from 'react-native-svg';
 import { CustomCakeConfig } from '../models/customizer.model';
+import { ThreeCakeCanvas } from './ThreeCakeCanvas';
+import { colors } from '../../../core/theme';
 
 interface CakeVisualizerProps {
   config: Partial<CustomCakeConfig>;
@@ -24,6 +26,7 @@ export const CakeVisualizer: React.FC<CakeVisualizerProps> = ({
   config,
   size = 'md'
 }) => {
+  const [viewMode, setViewMode] = useState<'3d' | '2d'>('3d');
   const baseColor = config.base?.spongeColor || '#FDF2D0';
   const frostingColor = config.frosting?.color || '#FFFBF5';
   const dripColor = config.drip?.color || '#F472B6';
@@ -34,15 +37,41 @@ export const CakeVisualizer: React.FC<CakeVisualizerProps> = ({
   const topperText = config.toppings?.topperText || 'Happy Birthday';
 
   const dimensions = {
-    sm: { width: 190, height: 180 },
-    md: { width: 250, height: 235 },
-    lg: { width: 290, height: 270 }
+    sm: { width: 220, height: 210 },
+    md: { width: 270, height: 260 },
+    lg: { width: 310, height: 300 }
   }[size];
 
   return (
     <View style={[styles.container, { width: dimensions.width, height: dimensions.height }]}>
-      {/* Background Sparkles */}
-      <View style={styles.sparklesOverlay} pointerEvents="none">
+      {/* 3D / 2D View Switcher Badge */}
+      <View style={styles.switcherContainer}>
+        <TouchableOpacity
+          onPress={() => setViewMode('3d')}
+          style={[styles.switcherBtn, viewMode === '3d' && styles.switcherBtnActive]}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.switcherText, viewMode === '3d' && styles.switcherTextActive]}>
+            🧊 3D
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setViewMode('2d')}
+          style={[styles.switcherBtn, viewMode === '2d' && styles.switcherBtnActive]}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.switcherText, viewMode === '2d' && styles.switcherTextActive]}>
+            🎨 2D
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {viewMode === '3d' ? (
+        <ThreeCakeCanvas config={config} width={dimensions.width} height={dimensions.height - 20} />
+      ) : (
+        <>
+          {/* Background Sparkles */}
+          <View style={styles.sparklesOverlay} pointerEvents="none">
         <Text style={[styles.sparkle, { top: 6, left: 10, fontSize: 16 }]}>✨</Text>
         <Text style={[styles.sparkle, { top: 18, right: 14, fontSize: 14, color: '#F59E0B' }]}>★</Text>
         <Text style={[styles.sparkle, { bottom: 12, left: 16, fontSize: 14 }]}>🌸</Text>
@@ -253,6 +282,8 @@ export const CakeVisualizer: React.FC<CakeVisualizerProps> = ({
           </G>
         )}
       </Svg>
+        </>
+      )}
     </View>
   );
 };
@@ -262,6 +293,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative'
+  },
+  switcherContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 8,
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    padding: 2,
+    borderWidth: 1.5,
+    borderColor: colors.borderPink,
+    zIndex: 30,
+  },
+  switcherBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  switcherBtnActive: {
+    backgroundColor: colors.pinkSoft,
+  },
+  switcherText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.textSecondary,
+  },
+  switcherTextActive: {
+    color: colors.primaryDark,
   },
   sparklesOverlay: {
     ...StyleSheet.absoluteFillObject

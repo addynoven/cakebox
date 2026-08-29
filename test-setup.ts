@@ -79,3 +79,13 @@ mock.module('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
 }));
 
+mock.module('@react-three/fiber', () => ({
+  Canvas: ({ children }: any) => children,
+  useFrame: () => {},
+  useThree: () => ({}),
+}));
+
+mock.module('expo-gl', () => ({
+  GLView: 'GLView',
+}));
+
