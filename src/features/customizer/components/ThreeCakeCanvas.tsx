@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, StyleSheet, PanResponder, Text } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import type { Group } from 'three';
 import { CustomCakeConfig } from '../models/customizer.model';
 import { colors } from '../../../core/theme';
 
@@ -10,8 +10,13 @@ interface Cake3DProps {
   rotationY: number;
 }
 
+// Pure exponential damp smoothing (replaces duplicate THREE.MathUtils.damp runtime)
+function smoothDamp(current: number, target: number, lambda: number, dt: number): number {
+  return current + (target - current) * (1 - Math.exp(-lambda * dt));
+}
+
 function CakeModel({ config, rotationY }: Cake3DProps) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
 
   const spongeColor = config.base?.spongeColor || '#FDF2D0';
   const frostingColor = config.frosting?.color || '#FFFBF5';
@@ -23,7 +28,7 @@ function CakeModel({ config, rotationY }: Cake3DProps) {
   useFrame((_, delta) => {
     if (groupRef.current) {
       // Smoothly interpolate rotation to rotationY
-      groupRef.current.rotation.y = THREE.MathUtils.damp(
+      groupRef.current.rotation.y = smoothDamp(
         groupRef.current.rotation.y,
         rotationY,
         4,
