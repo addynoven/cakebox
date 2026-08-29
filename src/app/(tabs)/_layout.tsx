@@ -4,11 +4,13 @@ import { Platform, View, Text, StyleSheet } from 'react-native';
 import { Home, BookOpen, Sparkles, ShoppingBag, User } from 'lucide-react-native';
 import { colors } from '../../core/theme/colors';
 import { shadows } from '../../core/theme/shadows';
+import { useFeatureFlag } from '../../core/config';
 import { useCartStore } from '../../features/cart/store/useCartStore';
 
 export default function TabLayout() {
   const cart = useCartStore((state) => state.cart);
   const totalCartCount = cart.reduce((sum, it) => sum + it.quantity, 0);
+  const isCustomizerEnabled = useFeatureFlag('enable3DCustomizer');
 
   return (
     <Tabs
@@ -55,16 +57,12 @@ export default function TabLayout() {
         name="custom"
         options={{
           title: 'Custom',
+          href: isCustomizerEnabled ? '/(tabs)/custom' : null,
           tabBarIcon: () => (
             <View style={styles.customCircle}>
               <Text style={{ fontSize: 18 }}>🎂</Text>
             </View>
           ),
-          tabBarLabelStyle: {
-            color: colors.darkChocolate,
-            fontWeight: '900',
-            fontSize: 10,
-          },
         }}
       />
 
@@ -73,11 +71,13 @@ export default function TabLayout() {
         options={{
           title: 'Cart',
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
+            <View>
               <ShoppingBag size={20} color={color} strokeWidth={focused ? 2.5 : 2} />
               {totalCartCount > 0 && (
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{totalCartCount}</Text>
+                  <Text style={styles.badgeText}>
+                    {totalCartCount > 99 ? '99+' : totalCartCount}
+                  </Text>
                 </View>
               )}
             </View>
@@ -88,7 +88,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="orders"
         options={{
-          title: 'Orders',
+          title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
             <User size={20} color={color} strokeWidth={focused ? 2.5 : 2} />
           ),
@@ -99,17 +99,23 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  iconWrapper: {
-    position: 'relative',
+  customCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.pinkSoft,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.primaryLight,
+    marginTop: -4,
   },
   badge: {
     position: 'absolute',
     top: -4,
     right: -8,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
+    backgroundColor: colors.primaryDark,
+    borderRadius: 9,
     minWidth: 16,
     height: 16,
     alignItems: 'center',
@@ -120,17 +126,5 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 9,
     fontWeight: '900',
-  },
-  customCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primary,
-    borderWidth: 2.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    top: -10,
-    ...shadows.pink,
   },
 });

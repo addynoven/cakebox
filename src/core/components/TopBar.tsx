@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { ArrowLeft, Sparkles, MapPin } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { shadows } from '../theme/shadows';
+import { FeatureGate } from './FeatureGate';
 
 interface TopBarProps {
   title?: string;
@@ -47,29 +48,33 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </View>
 
-        {/* Right Section: Core Shortcuts */}
+        {/* Right Section: Core Shortcuts gated by FeatureFlags */}
         <View style={styles.rightSection}>
           {/* AI Chef Button */}
           {onOpenAIChef && (
-            <TouchableOpacity
-              onPress={onOpenAIChef}
-              style={styles.aiChefButton}
-              activeOpacity={0.8}
-            >
-              <Sparkles size={13} color={colors.white} />
-              <Text style={styles.aiChefText}>AI Chef</Text>
-            </TouchableOpacity>
+            <FeatureGate flag="enableAIChef">
+              <TouchableOpacity
+                onPress={onOpenAIChef}
+                style={styles.aiChefButton}
+                activeOpacity={0.8}
+              >
+                <Sparkles size={13} color={colors.white} />
+                <Text style={styles.aiChefText}>AI Chef</Text>
+              </TouchableOpacity>
+            </FeatureGate>
           )}
 
-          {/* Bakery Map Button */}
+          {/* Bakery Map Pickup Locator */}
           {onOpenBakeryMap && (
-            <TouchableOpacity
-              onPress={onOpenBakeryMap}
-              style={styles.iconCircle}
-              activeOpacity={0.7}
-            >
-              <MapPin size={16} color={colors.primary} />
-            </TouchableOpacity>
+            <FeatureGate flag="enableBakeryMap">
+              <TouchableOpacity
+                onPress={onOpenBakeryMap}
+                style={styles.mapIconButton}
+                activeOpacity={0.7}
+              >
+                <MapPin size={17} color={colors.primaryDark} />
+              </TouchableOpacity>
+            </FeatureGate>
           )}
         </View>
       </View>
@@ -80,56 +85,54 @@ export const TopBar: React.FC<TopBarProps> = ({
 const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: colors.bgCream,
-    borderBottomWidth: 1.5,
-    borderBottomColor: colors.borderPink,
+    paddingTop: 8,
+    paddingBottom: 8,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    zIndex: 30,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderPink,
   },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    height: 44,
   },
   leftSection: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   backRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
   backButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    borderColor: colors.borderPink,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.pinkSoft,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.soft,
+    marginRight: 10,
   },
   screenTitle: {
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '800',
     color: colors.darkChocolate,
   },
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
   logoImage: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    marginRight: 8,
   },
   logoText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
-    color: colors.darkChocolate,
+    color: colors.primaryDark,
     letterSpacing: -0.5,
   },
   rightSection: {
@@ -137,32 +140,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    borderColor: colors.borderPink,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadows.soft,
-  },
   aiChefButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: colors.darkChocolate,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.primaryLight,
-    ...shadows.soft,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+    ...shadows.pink,
   },
   aiChefText: {
-    color: colors.white,
     fontSize: 12,
     fontWeight: '800',
+    color: colors.white,
+  },
+  mapIconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.pinkSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderPink,
   },
 });
